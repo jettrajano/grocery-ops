@@ -1,4 +1,5 @@
-const CACHE_NAME = 'enxoval-em-conta-v4';
+const CACHE_PREFIX = 'enxoval-em-conta-';
+const CACHE_NAME = `${CACHE_PREFIX}v5`;
 const APP_FILES = ['./', './index.html', './styles.css', './app.js?v=3', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -6,7 +7,7 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', (event) => {
@@ -27,3 +28,4 @@ self.addEventListener('fetch', (event) => {
     return response;
   })));
 });
+
