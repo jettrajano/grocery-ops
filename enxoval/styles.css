@@ -227,10 +227,10 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
 .chart-guide { stroke: #e9eee8; stroke-width: 1; stroke-dasharray: 3 3; }
 .history-empty, .history-info { margin: 4px 0 10px; color: #929b94; font-size: 9px; line-height: 1.55; }
 .history-info { color: #a1a9a2; }
-.marketplace-search { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 9px 0 3px; }
-.marketplace-search-label { margin-right: 2px; color: #89938b; font-size: 9px; }
-.marketplace-search a { display: inline-flex; min-height: 30px; align-items: center; padding: 0 9px; border: 1px solid #e2e8e1; border-radius: 7px; background: #fbfcfa; color: #426d51; font-size: 9px; font-weight: 700; text-decoration: none; }
-.marketplace-search a:hover, .marketplace-search a:focus-visible { border-color: #9bbda4; background: #f0f6ef; outline: none; }
+.product-card .marketplace-search { display: flex; flex-wrap: wrap; align-items: center; column-gap: 9px; row-gap: 8px; margin: 12px 0 8px; }
+.product-card .marketplace-search-label { flex: 0 0 auto; margin-right: 2px; color: #89938b; font-size: 9px; }
+.product-card .marketplace-search > a { display: inline-flex; flex: 0 0 auto; min-height: 32px; align-items: center; justify-content: center; margin: 0; padding: 0 10px; border: 1px solid #e2e8e1; border-radius: 7px; background: #fbfcfa; color: #426d51; font-size: 9px; line-height: 1; font-weight: 700; text-decoration: none; }
+.product-card .marketplace-search > a:hover, .product-card .marketplace-search > a:focus-visible { border-color: #9bbda4; background: #f0f6ef; outline: none; }
 .history-list { max-height: 220px; overflow: auto; border-top: 1px solid #f0f2ef; }
 .history-list .offer-row { padding-right: 2px; }
 .difference-note { font-size: 9px; }
