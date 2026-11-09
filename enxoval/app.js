@@ -353,6 +353,37 @@ function createObservationRow(observation, best) {
   return row;
 }
 
+function createMarketplaceSearch(product) {
+  const group = document.createElement('div');
+  group.className = 'marketplace-search';
+  group.setAttribute('role', 'group');
+  group.setAttribute('aria-label', `Pesquisar ${product.name} em marketplaces`);
+
+  const label = document.createElement('span');
+  label.className = 'marketplace-search-label';
+  label.textContent = 'Pesquisar em';
+  group.append(label);
+
+  const query = product.name.trim();
+  const marketplaces = [
+    { name: 'Mercado Livre', url: `https://lista.mercadolivre.com.br/${encodeURIComponent(query).replace(/%20/g, '-')}` },
+    { name: 'Amazon', url: `https://www.amazon.com.br/s?k=${encodeURIComponent(query)}` },
+    { name: 'Shopee', url: `https://shopee.com.br/search?keyword=${encodeURIComponent(query)}` },
+  ];
+
+  marketplaces.forEach((marketplace) => {
+    const link = document.createElement('a');
+    link.href = marketplace.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = marketplace.name;
+    link.setAttribute('aria-label', `Pesquisar ${product.name} no ${marketplace.name}`);
+    group.append(link);
+  });
+
+  return group;
+}
+
 function createProductCard(product) {
   const allObservations = getProductObservations(product.id);
   const latest = getLatestByStore(product.id);
@@ -458,7 +489,7 @@ function createProductCard(product) {
   add.addEventListener('click', () => openOfferDialog(product.name));
   footer.append(note, add);
 
-  card.append(top, meta, target, pricesHeading, list, history, footer);
+  card.append(top, meta, target, pricesHeading, list, createMarketplaceSearch(product), history, footer);
   return card;
 }
 
@@ -676,3 +707,4 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 
 persistState();
 render();
+
