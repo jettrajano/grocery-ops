@@ -157,7 +157,7 @@
           </div>
           <button class="icon-button dialog-close" id="closeProductDialogButton" type="button" aria-label="Fechar">×</button>
         </div>
-        <p class="dialog-description">Cadastre um item sem precisar registrar um preço agora. Você pode informar uma categoria existente ou escrever uma nova.</p>
+        <p class="dialog-description">Cadastre um item sem precisar registrar um preço agora. Você pode informar uma categoria existente ou escrever uma nova. O valor de referência é em reais (R$), por exemplo 1.234,56.</p>
 
         <label class="field-label" for="newProductNameInput">Nome do item <span>*</span></label>
         <input class="text-input" id="newProductNameInput" name="name" placeholder="Ex.: Mosquiteiro para berço" maxlength="100" required />
@@ -201,7 +201,7 @@
         <input class="text-input" id="newProductLinkInput" name="productLink" type="url" inputmode="url" placeholder="https://..." maxlength="500" />
 
         <label class="field-label" for="newProductReferenceInput">Preço de referência (R$) <span class="field-hint">opcional</span></label>
-        <div class="price-input-wrap"><span>R$</span><input class="text-input" id="newProductReferenceInput" name="referencePrice" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0,00" /></div>
+        <div class="price-input-wrap"><span>R$</span><input class="text-input" id="newProductReferenceInput" name="referencePrice" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" /></div>
 
         <p class="form-error" id="productFormError" role="alert" hidden></p>
         <div class="dialog-actions">
@@ -220,7 +220,7 @@
           </div>
           <button class="icon-button dialog-close" id="closeDialogButton" type="button" aria-label="Fechar">×</button>
         </div>
-        <p class="dialog-description">Cada registro fica guardado com a data. Para completar três meses, registre preços em novas consultas ou lance valores antigos comprovados por nota ou pesquisa salva.</p>
+        <p class="dialog-description">Cada registro fica guardado com a data. Informe o preço em reais (R$), por exemplo 1.234,56. Para completar três meses, registre preços em novas consultas ou lance valores antigos comprovados por nota ou pesquisa salva.</p>
         <label class="field-label" for="productInput">Item do enxoval <span>*</span></label>
         <input class="text-input" id="productInput" name="product" list="productSuggestions" placeholder="Ex.: Berço certificado INMETRO" maxlength="100" required />
         <datalist id="productSuggestions"></datalist>
@@ -231,7 +231,7 @@
           </div>
           <div class="field-group">
             <label class="field-label" for="priceInput">Preço (R$) <span>*</span></label>
-            <div class="price-input-wrap"><span>R$</span><input class="text-input" id="priceInput" name="price" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0,00" required /></div>
+            <div class="price-input-wrap"><span>R$</span><input class="text-input" id="priceInput" name="price" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" required /></div>
           </div>
         </div>
         <div class="form-row">
@@ -256,7 +256,7 @@
       </form>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js?v=8" defer></script>
+    <script src="./app.js?v=9" defer></script>
   </body>
 </html>
 

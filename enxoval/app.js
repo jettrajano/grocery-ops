@@ -57,6 +57,7 @@ const notesInput = document.querySelector('#notesInput');
 const formError = document.querySelector('#formError');
 const toast = document.querySelector('#toast');
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const moneyInputFormat = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const dateFormat = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 const palette = ['#27724e', '#8b6caa', '#c47850', '#4e7da4', '#bb5970', '#8b873e'];
 
@@ -94,6 +95,34 @@ function createId() {
 
 function normalize(value) {
   return String(value || '').trim().toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function parseBrazilianMoney(value) {
+  const cleaned = String(value ?? '').trim().replace(/^R\$\s*/i, '').replace(/[\s\u00a0]/g, '');
+  if (!cleaned) return NaN;
+
+  let normalized = cleaned;
+  if (cleaned.includes(',')) {
+    if ((cleaned.match(/,/g) || []).length !== 1) return NaN;
+    const [integer, decimal] = cleaned.split(',');
+    const validInteger = /^\d+$/.test(integer) || /^\d{1,3}(?:\.\d{3})+$/.test(integer);
+    if (!validInteger || !/^\d{1,2}$/.test(decimal)) return NaN;
+    normalized = `${integer.replace(/\./g, '')}.${decimal}`;
+  } else if (/^\d{1,3}(?:\.\d{3})+$/.test(cleaned)) {
+    normalized = cleaned.replace(/\./g, '');
+  } else if (!/^\d+(?:\.\d{1,2})?$/.test(cleaned)) {
+    return NaN;
+  }
+
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : NaN;
+}
+
+function formatBrazilianMoneyField(event) {
+  const field = event.currentTarget;
+  if (!field.value.trim()) return;
+  const amount = parseBrazilianMoney(field.value);
+  if (Number.isFinite(amount)) field.value = moneyInputFormat.format(amount);
 }
 
 function safeUrl(value) {
@@ -667,6 +696,7 @@ function handleProductSubmit(event) {
   const rawProductLink = newProductLinkInput.value.trim();
   const productLink = rawProductLink ? safeUrl(rawProductLink) : '';
   const referencePriceValue = newProductReferenceInput.value.trim();
+  const referencePrice = referencePriceValue ? parseBrazilianMoney(referencePriceValue) : null;
 
   if (!name || !typedCategory) {
     showProductFormError('Informe o nome do item e a categoria.');
@@ -686,9 +716,8 @@ function handleProductSubmit(event) {
     showProductFormError('A semana de compra deve ser um número inteiro maior que zero.');
     return;
   }
-  const referencePrice = referencePriceValue ? Number(referencePriceValue) : null;
   if (referencePriceValue && (!Number.isFinite(referencePrice) || referencePrice <= 0)) {
-    showProductFormError('O preço de referência precisa ser maior que zero.');
+    showProductFormError('Informe um preço de referência válido em reais (R$), maior que zero.');
     return;
   }
 
@@ -747,13 +776,13 @@ function handleSubmit(event) {
   event.preventDefault();
   const productName = productInput.value.trim().slice(0, 100);
   const store = storeInput.value.trim().slice(0, 80);
-  const price = Number(priceInput.value);
+  const price = parseBrazilianMoney(priceInput.value);
   const dateValue = dateInput.value;
   const source = sourceInput.value.trim().slice(0, 80);
   const rawLink = linkInput.value.trim();
   const link = rawLink ? safeUrl(rawLink) : '';
   if (!productName || !store || !Number.isFinite(price) || price <= 0 || !dateValue) {
-    showFormError('Informe produto, loja, data e um preço maior que zero.');
+    showFormError('Informe produto, loja, data e um preço válido em reais (R$), maior que zero.');
     return;
   }
   if (rawLink && !link) {
@@ -875,6 +904,8 @@ document.querySelector('#closeProductDialogButton').addEventListener('click', cl
 document.querySelector('#cancelProductDialogButton').addEventListener('click', closeProductDialog);
 offerForm.addEventListener('submit', handleSubmit);
 productForm.addEventListener('submit', handleProductSubmit);
+priceInput.addEventListener('blur', formatBrazilianMoneyField);
+newProductReferenceInput.addEventListener('blur', formatBrazilianMoneyField);
 document.querySelector('#filterTrackedButton').addEventListener('click', () => toggleSummaryFilter('tracked'));
 document.querySelector('#filterRecordsButton').addEventListener('click', () => toggleSummaryFilter('records'));
 document.querySelector('#filterBelowTargetButton').addEventListener('click', () => toggleSummaryFilter('belowTarget'));
