@@ -37,6 +37,10 @@
             <p class="hero-description">Compare lojas, acompanhe cada preço ao longo do tempo e veja se a oferta ficou abaixo do valor de referência que você informou.</p>
           </div>
           <div class="hero-actions">
+            <button class="button button-quiet" id="addProductButton" type="button">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>
+              Adicionar item
+            </button>
             <button class="button button-primary" id="openOfferButton" type="button">
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>
               Registrar preço
@@ -139,6 +143,66 @@
       </main>
     </div>
 
+    <dialog class="offer-dialog product-dialog" id="productDialog" aria-labelledby="productDialogTitle">
+      <form id="productForm" novalidate>
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow eyebrow-muted">LISTA DO ENXOVAL</p>
+            <h2 id="productDialogTitle">Adicionar item</h2>
+          </div>
+          <button class="icon-button dialog-close" id="closeProductDialogButton" type="button" aria-label="Fechar">×</button>
+        </div>
+        <p class="dialog-description">Cadastre um item sem precisar registrar um preço agora. Você pode informar uma categoria existente ou escrever uma nova.</p>
+
+        <label class="field-label" for="newProductNameInput">Nome do item <span>*</span></label>
+        <input class="text-input" id="newProductNameInput" name="name" placeholder="Ex.: Mosquiteiro para berço" maxlength="100" required />
+
+        <label class="field-label" for="newProductCategoryInput">Categoria <span>*</span></label>
+        <input class="text-input" id="newProductCategoryInput" name="category" list="categorySuggestions" placeholder="Escolha ou digite uma categoria" maxlength="40" required />
+        <datalist id="categorySuggestions"></datalist>
+
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label" for="newProductPriorityInput">Prioridade</label>
+            <select class="text-input" id="newProductPriorityInput" name="priority">
+              <option value="Alta">Alta</option>
+              <option value="Média" selected>Média</option>
+              <option value="Baixa">Baixa</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="newProductWeekInput">Semana de compra</label>
+            <input class="text-input" id="newProductWeekInput" name="targetWeek" type="number" inputmode="numeric" min="1" step="1" placeholder="Ex.: 24" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field-group">
+            <label class="field-label" for="newProductResponsibleInput">Responsável</label>
+            <input class="text-input" id="newProductResponsibleInput" name="responsible" list="responsibleSuggestions" placeholder="Ex.: Mãe, Pai ou Ambos" maxlength="40" />
+            <datalist id="responsibleSuggestions">
+              <option value="Mãe"></option>
+              <option value="Pai"></option>
+              <option value="Ambos"></option>
+            </datalist>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="newProductStoreInput">Loja preferida</label>
+            <input class="text-input" id="newProductStoreInput" name="preferredStore" placeholder="Ex.: Farmácia ou Internet" maxlength="80" />
+          </div>
+        </div>
+
+        <label class="field-label" for="newProductReferenceInput">Preço de referência (R$) <span class="field-hint">opcional</span></label>
+        <div class="price-input-wrap"><span>R$</span><input class="text-input" id="newProductReferenceInput" name="referencePrice" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0,00" /></div>
+
+        <p class="form-error" id="productFormError" role="alert" hidden></p>
+        <div class="dialog-actions">
+          <button class="button button-quiet" id="cancelProductDialogButton" type="button">Cancelar</button>
+          <button class="button button-primary" type="submit">Salvar item</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog class="offer-dialog" id="offerDialog" aria-labelledby="dialogTitle">
       <form id="offerForm" novalidate>
         <div class="dialog-heading">
@@ -184,7 +248,7 @@
       </form>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js?v=4" defer></script>
+    <script src="./app.js?v=5" defer></script>
   </body>
 </html>
 

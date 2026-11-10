@@ -34,6 +34,16 @@ const DEFAULT_PRODUCTS = [
 
 const productGrid = document.querySelector('#productGrid');
 const emptyState = document.querySelector('#emptyState');
+const productDialog = document.querySelector('#productDialog');
+const productForm = document.querySelector('#productForm');
+const newProductNameInput = document.querySelector('#newProductNameInput');
+const newProductCategoryInput = document.querySelector('#newProductCategoryInput');
+const newProductPriorityInput = document.querySelector('#newProductPriorityInput');
+const newProductWeekInput = document.querySelector('#newProductWeekInput');
+const newProductResponsibleInput = document.querySelector('#newProductResponsibleInput');
+const newProductStoreInput = document.querySelector('#newProductStoreInput');
+const newProductReferenceInput = document.querySelector('#newProductReferenceInput');
+const productFormError = document.querySelector('#productFormError');
 const offerDialog = document.querySelector('#offerDialog');
 const offerForm = document.querySelector('#offerForm');
 const productInput = document.querySelector('#productInput');
@@ -496,9 +506,18 @@ function createProductCard(product) {
 function updateCategoryFilter() {
   const select = document.querySelector('#categoryFilter');
   const current = select.value;
-  const categories = [...new Set(state.products.map((product) => product.category))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const categories = getCategories();
   select.replaceChildren(new Option('Todas as categorias', ''), ...categories.map((category) => new Option(category, category)));
   select.value = categories.includes(current) ? current : '';
+}
+
+function getCategories() {
+  return [...new Set(state.products.map((product) => product.category))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function updateCategorySuggestions() {
+  const options = getCategories().map((category) => new Option(category, category));
+  document.querySelector('#categorySuggestions').replaceChildren(...options);
 }
 
 function render() {
@@ -538,6 +557,82 @@ function render() {
     return option;
   });
   document.querySelector('#productSuggestions').replaceChildren(...suggestions);
+  updateCategorySuggestions();
+}
+
+function openProductDialog() {
+  productForm.reset();
+  newProductPriorityInput.value = 'Média';
+  productFormError.hidden = true;
+  productDialog.showModal();
+  window.setTimeout(() => newProductNameInput.focus(), 0);
+}
+
+function closeProductDialog() {
+  productDialog.close();
+  productFormError.hidden = true;
+}
+
+function showProductFormError(message) {
+  productFormError.textContent = message;
+  productFormError.hidden = false;
+}
+
+function handleProductSubmit(event) {
+  event.preventDefault();
+  const name = newProductNameInput.value.trim().slice(0, 100);
+  const typedCategory = newProductCategoryInput.value.trim().slice(0, 40);
+  const targetWeekValue = newProductWeekInput.value.trim();
+  const referencePriceValue = newProductReferenceInput.value.trim();
+
+  if (!name || !typedCategory) {
+    showProductFormError('Informe o nome do item e a categoria.');
+    return;
+  }
+  if (state.products.some((product) => normalize(product.name) === normalize(name))) {
+    showProductFormError('Já existe um item com esse nome. Confira a lista e tente outro nome.');
+    return;
+  }
+
+  const targetWeek = targetWeekValue ? Number(targetWeekValue) : null;
+  if (targetWeekValue && (!Number.isInteger(targetWeek) || targetWeek < 1)) {
+    showProductFormError('A semana de compra deve ser um número inteiro maior que zero.');
+    return;
+  }
+  const referencePrice = referencePriceValue ? Number(referencePriceValue) : null;
+  if (referencePriceValue && (!Number.isFinite(referencePrice) || referencePrice <= 0)) {
+    showProductFormError('O preço de referência precisa ser maior que zero.');
+    return;
+  }
+
+  const matchingCategory = state.products.find((product) => normalize(product.category) === normalize(typedCategory))?.category;
+  const product = sanitizeProduct({
+    id: createId(),
+    name,
+    category: matchingCategory || typedCategory,
+    priority: newProductPriorityInput.value,
+    targetWeek,
+    responsible: newProductResponsibleInput.value.trim(),
+    preferredStore: newProductStoreInput.value.trim(),
+    referencePrice,
+    custom: true,
+  });
+  if (!product) {
+    showProductFormError('Não foi possível cadastrar esse item. Confira os dados e tente novamente.');
+    return;
+  }
+
+  state.products.push(product);
+  if (!persistState()) {
+    state.products = state.products.filter((item) => item.id !== product.id);
+    return;
+  }
+  closeProductDialog();
+  document.querySelector('#searchInput').value = '';
+  document.querySelector('#categoryFilter').value = '';
+  document.querySelector('#priorityFilter').value = '';
+  render();
+  showToast('Item adicionado à lista do enxoval.');
 }
 
 function openOfferDialog(productName = '') {
@@ -678,6 +773,7 @@ async function importBackup(file) {
 }
 
 document.querySelector('#openOfferButton').addEventListener('click', () => openOfferDialog());
+document.querySelector('#addProductButton').addEventListener('click', openProductDialog);
 document.querySelector('#exportButton').addEventListener('click', exportState);
 document.querySelector('#importButton').addEventListener('click', () => document.querySelector('#importInput').click());
 document.querySelector('#importInput').addEventListener('change', (event) => {
@@ -686,13 +782,19 @@ document.querySelector('#importInput').addEventListener('change', (event) => {
 });
 document.querySelector('#closeDialogButton').addEventListener('click', closeOfferDialog);
 document.querySelector('#cancelDialogButton').addEventListener('click', closeOfferDialog);
+document.querySelector('#closeProductDialogButton').addEventListener('click', closeProductDialog);
+document.querySelector('#cancelProductDialogButton').addEventListener('click', closeProductDialog);
 offerForm.addEventListener('submit', handleSubmit);
+productForm.addEventListener('submit', handleProductSubmit);
 document.querySelector('#searchInput').addEventListener('input', render);
 document.querySelector('#sortSelect').addEventListener('change', render);
 document.querySelector('#categoryFilter').addEventListener('change', render);
 document.querySelector('#priorityFilter').addEventListener('change', render);
 offerDialog.addEventListener('click', (event) => {
   if (event.target === offerDialog) closeOfferDialog();
+});
+productDialog.addEventListener('click', (event) => {
+  if (event.target === productDialog) closeProductDialog();
 });
 document.addEventListener('keydown', (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
