@@ -47,6 +47,10 @@ h1 { margin-bottom: 12px; font: 700 clamp(34px, 4.1vw, 51px)/1.09 'Manrope', 'Se
 .button-quiet:hover:not(:disabled) { background: #f4f6f2; }
 .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 49px; }
 .stat-card { min-height: 92px; display: grid; grid-template-columns: 40px minmax(0,1fr) auto; align-items: center; gap: 12px; padding: 15px 16px; background: var(--paper); border: 1px solid #edf0eb; border-radius: 12px; box-shadow: var(--shadow); }
+.stat-card-button { width: 100%; color: inherit; font: inherit; text-align: left; cursor: pointer; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.stat-card-button:hover { border-color: #c9d9ca; box-shadow: 0 8px 24px rgba(38, 72, 47, .09); transform: translateY(-1px); }
+.stat-card-button:focus-visible { outline: 3px solid rgba(66, 129, 86, .35); outline-offset: 3px; }
+.stat-card-button[aria-pressed="true"] { border-color: #7ba889; box-shadow: 0 0 0 2px rgba(66, 129, 86, .13), var(--shadow); }
 .stat-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; }
 .stat-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .icon-lilac { background: #f2eff8; color: #8878af; }
@@ -177,6 +181,9 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
   .stat-value { font-size: 19px; }
   .stat-money { font-size: 16px; }
   .stat-note { display: none; }
+  .stat-card-button { grid-template-columns: 32px minmax(0,1fr); }
+  .stat-card-button .stat-icon { grid-row: 1 / span 2; }
+  .stat-card-button .stat-note { display: block; grid-column: 2; grid-row: 2; padding-top: 0; text-align: left; white-space: normal; font-size: 8px; line-height: 1.2; }
   .section-heading { align-items: flex-start; flex-direction: column; gap: 13px; margin-bottom: 14px; }
   h2 { font-size: 19px; }
   .sort-control { margin-left: auto; }
@@ -201,6 +208,10 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
 .filter-row .search-box { flex: 1 1 300px; width: auto; max-width: 520px; }
 .filter-control { display: flex; align-items: center; gap: 7px; color: #89938b; font-size: 10px; }
 .filter-control select { min-width: 118px; min-height: 40px; appearance: none; border: 1px solid #e4e8e3; border-radius: 8px; padding: 0 10px; background: #fff; color: #515b54; font-size: 11px; font-weight: 600; }
+.summary-filter-note { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 13px; padding: 10px 13px; border: 1px solid #dfeadf; border-radius: 9px; background: #f5f8f3; color: #5c705f; font-size: 10px; line-height: 1.5; }
+.summary-filter-note[hidden] { display: none; }
+.summary-filter-clear { flex: 0 0 auto; border: 0; padding: 4px 0; background: none; color: #37734d; font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.summary-filter-clear:focus-visible { border-radius: 4px; outline: 2px solid #78a487; outline-offset: 3px; }
 .price-source-note { margin: -1px 0 18px; padding: 11px 13px; border: 1px solid #e7eee5; border-radius: 9px; background: #f0f6ef; color: #66786a; font-size: 10px; line-height: 1.55; }
 .price-source-note strong { color: #3d6147; }
 .product-card { padding: 17px 17px 13px; }
@@ -233,6 +244,7 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
 .product-card .marketplace-search > .product-listing-link { border-color: #cfe0d0; background: #eef6ef; color: #2c7049; }
 .product-card .marketplace-search > a:hover, .product-card .marketplace-search > a:focus-visible { border-color: #9bbda4; background: #f0f6ef; outline: none; }
 .history-list { max-height: 220px; overflow: auto; border-top: 1px solid #f0f2ef; }
+.product-grid.is-records-view .history-list { max-height: none; overflow: visible; }
 .history-list .offer-row { padding-right: 2px; }
 .difference-note { font-size: 9px; }
 .card-footer { padding-top: 9px; }
@@ -266,6 +278,7 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
   .filter-row .search-box { flex: 1 1 100%; max-width: none; }
   .filter-control { flex: 1; display: grid; gap: 4px; }
   .filter-control select { width: 100%; min-width: 0; }
+  .summary-filter-note { align-items: flex-start; flex-direction: column; gap: 5px; }
   .price-source-note { margin-bottom: 13px; font-size: 9px; }
   .product-grid { grid-template-columns: 1fr; }
   .product-card { padding: 14px; }

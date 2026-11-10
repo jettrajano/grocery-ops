@@ -8,7 +8,7 @@
     <title>Enxoval em Conta — avaliação de preços</title>
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=5" />
   </head>
   <body>
     <div class="app-shell">
@@ -63,28 +63,28 @@
             <div><p class="stat-label">Itens do enxoval</p><p class="stat-value" id="productCount">0</p></div>
             <span class="stat-note">na lista</span>
           </article>
-          <article class="stat-card">
+          <button class="stat-card stat-card-button" id="filterTrackedButton" type="button" aria-pressed="false" aria-controls="productGrid" aria-label="Mostrar itens pesquisados">
             <span class="stat-icon icon-mint" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3.5 20h17M5 20V9l7-5 7 5v11M9 20v-6h6v6M8 10h.01M16 10h.01"/></svg></span>
             <div><p class="stat-label">Itens pesquisados</p><p class="stat-value" id="trackedCount">0</p></div>
-            <span class="stat-note">com preço</span>
-          </article>
-          <article class="stat-card">
+            <span class="stat-note">Ver itens</span>
+          </button>
+          <button class="stat-card stat-card-button" id="filterRecordsButton" type="button" aria-pressed="false" aria-controls="productGrid" aria-label="Mostrar registros de preços">
             <span class="stat-icon icon-peach" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h10"/><circle cx="18" cy="17.5" r="2.5"/></svg></span>
             <div><p class="stat-label">Registros</p><p class="stat-value" id="observationCount">0</p></div>
-            <span class="stat-note">no histórico</span>
-          </article>
-          <article class="stat-card stat-highlight">
+            <span class="stat-note">Ver registros</span>
+          </button>
+          <button class="stat-card stat-highlight stat-card-button" id="filterBelowTargetButton" type="button" aria-pressed="false" aria-controls="productGrid" aria-label="Mostrar itens com preço abaixo da referência">
             <span class="stat-icon icon-green" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg></span>
             <div><p class="stat-label">Abaixo da referência</p><p class="stat-value" id="belowTargetCount">0</p></div>
-            <span class="stat-note">pelo menor preço</span>
-          </article>
+            <span class="stat-note">Ver itens</span>
+          </button>
         </section>
 
         <section class="catalog-section" aria-labelledby="catalog-title">
           <div class="section-heading">
             <div>
               <p class="eyebrow eyebrow-muted">LISTA PERSONALIZADA</p>
-              <h2 id="catalog-title">Acompanhe o enxoval <span class="result-count" id="resultCount">0</span></h2>
+              <h2 id="catalog-title"><span id="catalogHeadingText">Acompanhe o enxoval</span> <span class="result-count" id="resultCount">0</span></h2>
             </div>
             <label class="sort-control" for="sortSelect">
               <span>Ordenar</span>
@@ -117,6 +117,11 @@
                 <option value="Baixa">Baixa</option>
               </select>
             </label>
+          </div>
+
+          <div class="summary-filter-note" id="summaryFilterNote" hidden>
+            <span id="summaryFilterText"></span>
+            <button class="summary-filter-clear" id="clearSummaryFilterButton" type="button">Mostrar todos</button>
           </div>
 
           <div class="price-source-note"><strong>Sobre os valores:</strong> os valores de referência vêm da sua lista. Use os links nos cartões para pesquisar nos marketplaces; confira vendedor, variação e frete, depois registre o preço manualmente. O app não inventa preços antigos nem coleta preços automaticamente.</div>
@@ -251,7 +256,7 @@
       </form>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js?v=6" defer></script>
+    <script src="./app.js?v=8" defer></script>
   </body>
 </html>
 
