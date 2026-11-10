@@ -47,6 +47,8 @@ const newProductReferenceInput = document.querySelector('#newProductReferenceInp
 const productFormError = document.querySelector('#productFormError');
 const offerDialog = document.querySelector('#offerDialog');
 const offerForm = document.querySelector('#offerForm');
+const offerDialogDescription = document.querySelector('#offerDialogDescription');
+const offerSubmitButton = document.querySelector('#offerSubmitButton');
 const productInput = document.querySelector('#productInput');
 const storeInput = document.querySelector('#storeInput');
 const priceInput = document.querySelector('#priceInput');
@@ -63,6 +65,7 @@ const palette = ['#27724e', '#8b6caa', '#c47850', '#4e7da4', '#bb5970', '#8b873e
 
 let state = loadState();
 let activeSummaryFilter = '';
+let editingObservationId = null;
 let toastTimer;
 
 const SUMMARY_FILTERS = {
@@ -262,6 +265,7 @@ function icon(name) {
   const paths = {
     store: '<path d="M3 8h14l-1.2-5H4.2L3 8Zm1 0v9h12V8M7 17v-5h6v5M3 8a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/>',
     link: '<path d="M8 12a4 4 0 0 0 5.7 0l2-2A4 4 0 0 0 10 4.3L8.8 5.5M12 8a4 4 0 0 0-5.7 0l-2 2A4 4 0 0 0 11 15.7l1.2-1.2"/>',
+    edit: '<path d="m3 14.5 9.8-9.8a2 2 0 0 1 2.8 0l.7.7a2 2 0 0 1 0 2.8L6.5 18H3v-3.5Z"/><path d="m11.5 6 3 3"/>',
     trash: '<path d="M3.5 5.5h13M7 5.5V3.8h6v1.7m2.5 0-.7 10.7H6.2L5.5 5.5M8.5 8.5v5m3-5v5"/>',
     plus: '<path d="M10 4v12M4 10h12"/>',
   };
@@ -357,7 +361,7 @@ function createHistoryChart(observations) {
   return svg;
 }
 
-function createObservationRow(observation, best) {
+function createObservationRow(observation, best, productName) {
   const row = document.createElement('div');
   row.className = `offer-row${observation.id === best?.id ? ' is-best' : ''}`;
   const storeWrap = document.createElement('div');
@@ -407,6 +411,14 @@ function createObservationRow(observation, best) {
     link.append(icon('link'));
     actions.append(link);
   }
+  const edit = document.createElement('button');
+  edit.className = 'icon-button edit-offer';
+  edit.type = 'button';
+  edit.setAttribute('aria-label', `Editar preço de ${productName} na loja ${observation.store}, ${currency.format(observation.price)}`);
+  edit.title = 'Editar este registro de preço';
+  edit.append(icon('edit'));
+  edit.addEventListener('click', () => openOfferDialog(productName, observation));
+  actions.append(edit);
   const remove = document.createElement('button');
   remove.className = 'icon-button delete-offer';
   remove.type = 'button';
@@ -510,7 +522,7 @@ function createProductCard(product) {
   pricesHeading.textContent = latest.length ? 'Preço mais recente por loja' : 'Ainda sem preço observado';
   const list = document.createElement('div');
   list.className = 'offer-list';
-  latest.forEach((observation, index) => list.append(createObservationRow(observation, index === 0 ? observation : null)));
+  latest.forEach((observation, index) => list.append(createObservationRow(observation, index === 0 ? observation : null, product.name)));
   if (!latest.length) {
     const empty = document.createElement('p');
     empty.className = 'no-price-note';
@@ -550,7 +562,7 @@ function createProductCard(product) {
   if (allObservations.length) {
     const historyList = document.createElement('div');
     historyList.className = 'history-list';
-    allObservations.forEach((observation) => historyList.append(createObservationRow(observation, best?.id === observation.id ? best : null)));
+    allObservations.forEach((observation) => historyList.append(createObservationRow(observation, best?.id === observation.id ? best : null, product.name)));
     history.append(historyList);
   }
 
@@ -753,18 +765,32 @@ function handleProductSubmit(event) {
   showToast('Item adicionado à lista do enxoval.');
 }
 
-function openOfferDialog(productName = '') {
+function openOfferDialog(productName = '', observation = null) {
   offerForm.reset();
+  editingObservationId = observation?.id || null;
   productInput.value = productName;
-  dateInput.value = localDateValue();
+  productInput.readOnly = Boolean(observation);
+  dateInput.value = observation ? localDateValue(new Date(observation.observedAt)) : localDateValue();
+  storeInput.value = observation?.store || '';
+  priceInput.value = observation ? moneyInputFormat.format(observation.price) : '';
+  sourceInput.value = observation?.source || '';
+  linkInput.value = observation?.link || '';
+  notesInput.value = observation?.notes || '';
+  document.querySelector('#dialogTitle').textContent = observation ? 'Editar preço registrado' : 'Registrar preço';
+  offerDialogDescription.textContent = observation
+    ? 'Altere o valor ou os detalhes desta pesquisa. Ao salvar, este registro será atualizado sem criar uma cópia.'
+    : 'Cada registro fica guardado com a data. Informe o preço em reais (R$), por exemplo 1.234,56. Para completar três meses, registre preços em novas consultas ou lance valores antigos comprovados por nota ou pesquisa salva.';
+  offerSubmitButton.textContent = observation ? 'Salvar alterações' : 'Salvar no histórico';
   formError.hidden = true;
   offerDialog.showModal();
-  window.setTimeout(() => (productName ? storeInput : productInput).focus(), 0);
+  window.setTimeout(() => (observation ? priceInput : productName ? storeInput : productInput).focus(), 0);
 }
 
 function closeOfferDialog() {
   offerDialog.close();
   formError.hidden = true;
+  editingObservationId = null;
+  productInput.readOnly = false;
 }
 
 function showFormError(message) {
@@ -774,6 +800,7 @@ function showFormError(message) {
 
 function handleSubmit(event) {
   event.preventDefault();
+  const wasEditing = Boolean(editingObservationId);
   const productName = productInput.value.trim().slice(0, 100);
   const store = storeInput.value.trim().slice(0, 80);
   const price = parseBrazilianMoney(priceInput.value);
@@ -796,17 +823,37 @@ function handleSubmit(event) {
   }
   let product = state.products.find((item) => normalize(item.name) === normalize(productName));
   if (!product) {
+    if (wasEditing) {
+      showFormError('O item deste registro não foi encontrado. Feche e atualize o aplicativo.');
+      return;
+    }
     product = sanitizeProduct({ id: createId(), name: productName, category: 'Outros', priority: 'Baixa', custom: true });
     state.products.push(product);
   }
-  state.observations.push(sanitizeObservation({
-    id: createId(), productId: product.id, store, price, source, link,
+  const observation = sanitizeObservation({
+    id: editingObservationId || createId(), productId: product.id, store, price, source, link,
     notes: notesInput.value, observedAt: observationDate.toISOString(),
-  }, product.id));
-  if (!persistState()) return;
+  }, product.id);
+  if (!observation) {
+    showFormError('Não foi possível salvar este registro. Confira os dados e tente novamente.');
+    return;
+  }
+  const editingIndex = wasEditing ? state.observations.findIndex((item) => item.id === editingObservationId) : -1;
+  if (wasEditing && editingIndex < 0) {
+    showFormError('Este registro não foi encontrado. Feche e atualize o aplicativo.');
+    return;
+  }
+  const previousObservation = editingIndex >= 0 ? state.observations[editingIndex] : null;
+  if (editingIndex >= 0) state.observations[editingIndex] = observation;
+  else state.observations.push(observation);
+  if (!persistState()) {
+    if (editingIndex >= 0) state.observations[editingIndex] = previousObservation;
+    else state.observations = state.observations.filter((item) => item.id !== observation.id);
+    return;
+  }
   closeOfferDialog();
   render();
-  showToast('Preço registrado no histórico.');
+  showToast(wasEditing ? 'Registro de preço atualizado.' : 'Preço registrado no histórico.');
 }
 
 function removeObservation(id) {
@@ -916,6 +963,10 @@ document.querySelector('#categoryFilter').addEventListener('change', handleManua
 document.querySelector('#priorityFilter').addEventListener('change', handleManualFilterChange);
 offerDialog.addEventListener('click', (event) => {
   if (event.target === offerDialog) closeOfferDialog();
+});
+offerDialog.addEventListener('cancel', () => {
+  editingObservationId = null;
+  productInput.readOnly = false;
 });
 productDialog.addEventListener('click', (event) => {
   if (event.target === productDialog) closeProductDialog();

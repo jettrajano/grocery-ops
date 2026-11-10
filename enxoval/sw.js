@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'enxoval-em-conta-';
-const CACHE_NAME = `${CACHE_PREFIX}v12`;
-const APP_FILES = ['./', './index.html', './styles.css?v=5', './app.js?v=9', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = `${CACHE_PREFIX}v13`;
+const APP_FILES = ['./', './index.html', './styles.css?v=6', './app.js?v=10', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
