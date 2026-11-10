@@ -230,6 +230,7 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
 .product-card .marketplace-search { display: flex; flex-wrap: wrap; align-items: center; column-gap: 9px; row-gap: 8px; margin: 12px 0 8px; }
 .product-card .marketplace-search-label { flex: 0 0 auto; margin-right: 2px; color: #89938b; font-size: 9px; }
 .product-card .marketplace-search > a { display: inline-flex; flex: 0 0 auto; min-height: 32px; align-items: center; justify-content: center; margin: 0; padding: 0 10px; border: 1px solid #e2e8e1; border-radius: 7px; background: #fbfcfa; color: #426d51; font-size: 9px; line-height: 1; font-weight: 700; text-decoration: none; }
+.product-card .marketplace-search > .product-listing-link { border-color: #cfe0d0; background: #eef6ef; color: #2c7049; }
 .product-card .marketplace-search > a:hover, .product-card .marketplace-search > a:focus-visible { border-color: #9bbda4; background: #f0f6ef; outline: none; }
 .history-list { max-height: 220px; overflow: auto; border-top: 1px solid #f0f2ef; }
 .history-list .offer-row { padding-right: 2px; }

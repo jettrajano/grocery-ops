@@ -42,6 +42,7 @@ const newProductPriorityInput = document.querySelector('#newProductPriorityInput
 const newProductWeekInput = document.querySelector('#newProductWeekInput');
 const newProductResponsibleInput = document.querySelector('#newProductResponsibleInput');
 const newProductStoreInput = document.querySelector('#newProductStoreInput');
+const newProductLinkInput = document.querySelector('#newProductLinkInput');
 const newProductReferenceInput = document.querySelector('#newProductReferenceInput');
 const productFormError = document.querySelector('#productFormError');
 const offerDialog = document.querySelector('#offerDialog');
@@ -90,6 +91,7 @@ function sanitizeProduct(product) {
     targetWeek: Number.isInteger(Number(product.targetWeek)) && Number(product.targetWeek) > 0 ? Number(product.targetWeek) : null,
     responsible: typeof product.responsible === 'string' ? product.responsible.slice(0, 40) : '',
     preferredStore: typeof product.preferredStore === 'string' ? product.preferredStore.slice(0, 80) : '',
+    productLink: safeUrl(typeof product.productLink === 'string' ? product.productLink.trim().slice(0, 1000) : ''),
     referencePrice: Number.isFinite(Number(product.referencePrice)) && Number(product.referencePrice) > 0 ? Number(product.referencePrice) : null,
     custom: Boolean(product.custom),
   };
@@ -367,7 +369,18 @@ function createMarketplaceSearch(product) {
   const group = document.createElement('div');
   group.className = 'marketplace-search';
   group.setAttribute('role', 'group');
-  group.setAttribute('aria-label', `Pesquisar ${product.name} em marketplaces`);
+  group.setAttribute('aria-label', `Abrir anúncio ou pesquisar ${product.name} em marketplaces`);
+
+  if (product.productLink) {
+    const listing = document.createElement('a');
+    listing.className = 'product-listing-link';
+    listing.href = product.productLink;
+    listing.target = '_blank';
+    listing.rel = 'noopener noreferrer';
+    listing.textContent = 'Ver anúncio salvo';
+    listing.setAttribute('aria-label', `Abrir anúncio salvo de ${product.name}`);
+    group.append(listing);
+  }
 
   const label = document.createElement('span');
   label.className = 'marketplace-search-label';
@@ -583,6 +596,8 @@ function handleProductSubmit(event) {
   const name = newProductNameInput.value.trim().slice(0, 100);
   const typedCategory = newProductCategoryInput.value.trim().slice(0, 40);
   const targetWeekValue = newProductWeekInput.value.trim();
+  const rawProductLink = newProductLinkInput.value.trim();
+  const productLink = rawProductLink ? safeUrl(rawProductLink) : '';
   const referencePriceValue = newProductReferenceInput.value.trim();
 
   if (!name || !typedCategory) {
@@ -591,6 +606,10 @@ function handleProductSubmit(event) {
   }
   if (state.products.some((product) => normalize(product.name) === normalize(name))) {
     showProductFormError('Já existe um item com esse nome. Confira a lista e tente outro nome.');
+    return;
+  }
+  if (rawProductLink && !productLink) {
+    showProductFormError('Informe um link válido começando com http:// ou https://.');
     return;
   }
 
@@ -614,6 +633,7 @@ function handleProductSubmit(event) {
     targetWeek,
     responsible: newProductResponsibleInput.value.trim(),
     preferredStore: newProductStoreInput.value.trim(),
+    productLink,
     referencePrice,
     custom: true,
   });

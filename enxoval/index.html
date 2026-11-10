@@ -8,7 +8,7 @@
     <title>Enxoval em Conta — avaliação de preços</title>
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./styles.css?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=3" />
   </head>
   <body>
     <div class="app-shell">
@@ -192,6 +192,9 @@
           </div>
         </div>
 
+        <label class="field-label" for="newProductLinkInput">Link do anúncio ou produto <span class="field-hint">opcional</span></label>
+        <input class="text-input" id="newProductLinkInput" name="productLink" type="url" inputmode="url" placeholder="https://..." maxlength="500" />
+
         <label class="field-label" for="newProductReferenceInput">Preço de referência (R$) <span class="field-hint">opcional</span></label>
         <div class="price-input-wrap"><span>R$</span><input class="text-input" id="newProductReferenceInput" name="referencePrice" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="0,00" /></div>
 
@@ -248,7 +251,7 @@
       </form>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js?v=5" defer></script>
+    <script src="./app.js?v=6" defer></script>
   </body>
 </html>
 
