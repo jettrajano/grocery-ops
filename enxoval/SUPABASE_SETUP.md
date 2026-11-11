@@ -23,7 +23,7 @@ Faça estas etapas com internet. O convite e o acesso à lista são duas coisas 
 4. Digite o e-mail da pessoa e envie o convite.
 5. Peça para a pessoa abrir o e-mail do Supabase e concluir o convite. O convite abre o app, que pedirá para ela criar uma senha própria.
 
-Se a pessoa já possui uma conta confirmada neste projeto Supabase, pule esta etapa. Não crie uma segunda conta para o mesmo e-mail.
+Se a pessoa já possui uma conta confirmada neste projeto Supabase, pule esta etapa. Não crie uma segunda conta para o mesmo e-mail. Se ela já aceitou um convite que voltou para `localhost`, use **Send password recovery** na página dessa conta no painel; o link novo vai levá-la ao app para definir uma senha segura.
 
 ### 2. Liberar o acesso à lista da família
 
@@ -41,7 +41,7 @@ O Supabase usa o **Site URL** para decidir para onde o navegador volta depois de
 1. No painel do projeto, abra **Authentication → URL Configuration**.
 2. Em **Site URL**, coloque `https://jettrajano.github.io/grocery-ops/enxoval/`.
 3. Em **Redirect URLs**, adicione também esse mesmo endereço exato.
-4. Salve. Convites enviados antes da correção ainda podem levar ao endereço antigo; envie um convite novo depois de cancelar a conta convidada antiga.
+4. Salve. Links enviados antes da correção ainda podem levar ao endereço antigo. Para uma pessoa que já aceitou o convite, abra o usuário em **Authentication → Users** e escolha **Send password recovery**. A pessoa abre o e-mail, define uma senha no app e depois você libera o acesso à lista.
 
 ## Como retirar o acesso
 
