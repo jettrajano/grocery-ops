@@ -8,9 +8,25 @@
     <title>Enxoval em Conta — avaliação de preços</title>
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./styles.css?v=8" />
+    <link rel="stylesheet" href="./styles.css?v=9" />
   </head>
   <body>
+    <section class="auth-gate" id="passwordGate" aria-labelledby="passwordTitle" hidden>
+      <div class="auth-card">
+        <p class="eyebrow eyebrow-muted">CONVITE ACEITO</p>
+        <h1 id="passwordTitle">Crie sua senha</h1>
+        <p class="auth-description">Escolha uma senha pessoal para entrar novamente no Enxoval em Conta. Não compartilhe essa senha com o responsável pela lista.</p>
+        <form id="passwordForm" novalidate>
+          <label class="field-label" for="invitePassword">Nova senha</label>
+          <input class="text-input" id="invitePassword" name="password" type="password" autocomplete="new-password" minlength="10" required />
+          <label class="field-label" for="invitePasswordConfirm">Digite a senha novamente</label>
+          <input class="text-input" id="invitePasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="10" required />
+          <p class="form-error auth-error" id="passwordError" role="alert" hidden></p>
+          <button class="button button-primary auth-submit" id="passwordButton" type="submit">Salvar minha senha</button>
+        </form>
+        <p class="auth-footnote">Use pelo menos 10 caracteres. Depois de salvar, o app concluirá seu acesso.</p>
+      </div>
+    </section>
     <section class="auth-gate" id="authGate" aria-labelledby="authTitle">
       <div class="auth-card">
         <a class="brand auth-brand" href="./" aria-label="Enxoval em Conta">
@@ -301,7 +317,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer crossorigin="anonymous"></script>
     <script src="./app.js?v=11" defer></script>
-    <script src="./cloud.js?v=2" defer></script>
+    <script src="./cloud.js?v=3" defer></script>
   </body>
 </html>
 
