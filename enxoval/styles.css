@@ -328,3 +328,7 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
 .member-security-note { margin: 15px 0 0; padding: 10px 12px; border-radius: 8px; background: #f1f5ef; }
 .member-security-note strong { color: #435e49; }
 @media (max-width: 650px) { .member-panel { margin: 18px 0; padding: 16px 14px; } .member-form-row { flex-direction: column; } .member-form-row .button { width: 100%; } }
+
+
+/* Invite password setup. */
+#passwordGate[hidden] { display: none !important; }
