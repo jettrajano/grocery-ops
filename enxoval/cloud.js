@@ -374,10 +374,12 @@
       invitePassword.value = '';
       invitePasswordConfirm.value = '';
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-      const sessionResult = await client.auth.getSession();
-      if (sessionResult.error || !sessionResult.data.session) throw sessionResult.error || new Error('Sessão não encontrada');
+      const signOutResult = await client.auth.signOut({ scope: 'global' });
+      if (signOutResult.error) throw signOutResult.error;
       passwordGate.hidden = true;
-      await activateSession(sessionResult.data.session);
+      showAuth();
+      authError.textContent = 'Senha salva. Entre agora com seu e-mail e a nova senha.';
+      authError.hidden = false;
     } catch (error) {
       passwordError.textContent = 'Não foi possível salvar a senha. Peça para o responsável enviar um novo link de recuperação e tente novamente.';
       passwordError.hidden = false;
