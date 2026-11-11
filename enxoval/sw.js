@@ -1,7 +1,7 @@
 const CACHE_PREFIX = 'enxoval-em-conta-';
-const CACHE_NAME = `${CACHE_PREFIX}v14`;
+const CACHE_NAME = `${CACHE_PREFIX}v15`;
 const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-const APP_FILES = ['./', './index.html', './styles.css?v=7', './app.js?v=11', './cloud.js?v=1', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', SUPABASE_CDN];
+const APP_FILES = ['./', './index.html', './styles.css?v=8', './app.js?v=11', './cloud.js?v=2', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', SUPABASE_CDN];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
