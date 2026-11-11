@@ -1,29 +1,59 @@
-# Supabase: configuração do Enxoval em Conta
+# Acesso seguro ao Enxoval em Conta
 
-## O que foi conectado
+Este guia explica como os dados são protegidos e como compartilhar a lista com outra pessoa.
 
-- Projeto Supabase: `Enxoval em Conta`, região São Paulo.
-- O app usa autenticação por e-mail e senha e não oferece cadastro público.
-- O navegador usa somente a chave **publishable** do Supabase, armazenada em `cloud.js`. Ela é pública por definição; a segurança dos dados depende do RLS.
-- A chave `secret`, a senha do banco e os tokens de administração não fazem parte deste repositório.
-- Os registros ficam em `enxoval_products` e `enxoval_observations`, associados a um grupo familiar.
-- As políticas RLS autorizam acesso somente a membros do grupo. Novas tabelas não recebem permissões públicas automáticas.
-- Alterações feitas sem internet ficam no armazenamento local do aparelho e são sincronizadas quando a conexão retorna. Exclusões de preços são sincronizadas por tombstones.
+## Como funciona a segurança
 
-## Configurar o banco
+- O app não tem botão de cadastro público. Cada pessoa usa a própria conta e senha.
+- Você, que criou primeiro a lista, é o **responsável** (owner). Só essa conta pode liberar outras pessoas.
+- As outras contas recebem o papel de **membro**. Membros podem ver, adicionar, alterar e excluir itens e preços da mesma lista.
+- A lista só aparece para contas que o responsável vinculou. Receber um e-mail de convite, sozinho, **não** dá acesso aos dados.
+- O app usa uma chave pública do Supabase. As regras do banco (RLS) verificam o usuário em cada acesso. A chave secreta do projeto nunca deve ser copiada para o app, para o GitHub ou para uma mensagem.
+- A senha de cada pessoa é privada: ninguém deve compartilhar a própria senha com você nem usar sua conta.
 
-1. No painel Supabase, abra **SQL Editor**.
-2. Abra o arquivo `supabase-schema.sql` nesta pasta, copie todo o conteúdo e cole numa consulta nova.
-3. Clique em **Run**. O script cria as tabelas, funções, políticas RLS, permissões mínimas e publicação Realtime. Ele pode ser executado novamente sem apagar registros.
+## Como compartilhar com uma pessoa
 
-## Acesso no app
+Faça estas etapas com internet. O convite e o acesso à lista são duas coisas diferentes.
 
-Entre com a conta criada em **Authentication → Users**. Use o mesmo login em cada dispositivo. O app sincroniza os dados locais existentes do aparelho na primeira entrada, juntando registros identificados pelo mesmo ID. Para guardar uma cópia independente, exporte o backup antes da primeira sincronização.
+### 1. Enviar o convite de conta, se a pessoa ainda não tem conta
 
-A primeira conta cria o grupo familiar no banco. Para adicionar outra conta no futuro, convide o usuário em Authentication e associe o UUID dele ao grupo por meio de `add_enxoval_household_member`; não compartilhe sua senha.
+1. Entre no app com sua conta de responsável.
+2. Na área **Compartilhar a lista com alguém**, abra o link **Usuários no painel Supabase**. Você também pode abrir diretamente: [Authentication → Users](https://supabase.com/dashboard/project/zxhpvpckkvholtrhyaod/auth/users).
+3. No painel, escolha **Add user → Send invitation**.
+4. Digite o e-mail da pessoa e envie o convite.
+5. Peça para a pessoa abrir o e-mail do Supabase e concluir o convite. Ela deve criar a própria senha.
 
-## Operação
+Se a pessoa já possui uma conta confirmada neste projeto Supabase, pule esta etapa. Não crie uma segunda conta para o mesmo e-mail.
 
-- O projeto usa o plano Free. Projetos gratuitos podem pausar após períodos de inatividade; a sincronização volta depois que o projeto for retomado no painel.
-- O painel e o app precisam de internet para autenticar e sincronizar. O modo offline mantém alterações no dispositivo até a conexão voltar.
-- Não copie uma chave `secret`, `service_role`, senha do banco ou token de administração para o código do app ou para este repositório.
+### 2. Liberar o acesso à lista da família
+
+1. Depois que a pessoa aceitou o convite e confirmou o e-mail, volte ao app.
+2. Digite no campo o mesmo e-mail que recebeu o convite.
+3. Escolha **Dar acesso à lista**.
+4. O app confirma se há uma conta válida e a associa à sua lista. A pessoa então entra no app com o próprio e-mail e senha.
+
+Se aparecer uma mensagem dizendo que a conta não foi encontrada, confira se o e-mail está escrito igual e se a pessoa já aceitou/confirmou o convite. A pessoa também pode entrar uma vez no app para concluir o acesso e, depois, você tenta novamente. Se a conta já pertencer a outra lista familiar, ela não pode ser adicionada a esta.
+
+## Como retirar o acesso
+
+No momento, não há botão para remover membros no app. Se precisar retirar alguém, abra **Authentication → Users** no painel Supabase e exclua a conta dessa pessoa. O vínculo de membro é removido automaticamente pelo banco. A pessoa deixa de conseguir acessar a lista; não exclua sua própria conta de responsável.
+
+## Antes de compartilhar
+
+Compartilhe somente com pessoas em quem confia. Todo membro pode editar e apagar itens e preços. Não existe perfil somente para leitura nesta versão. Cada pessoa deve manter sua própria senha e usar uma conta individual.
+
+## Para revisar ou aprender
+
+- O arquivo `supabase-schema.sql` contém as tabelas, funções e regras de acesso do banco. Ele pode ser executado novamente; não apaga os dados da lista.
+- A função `ensure_enxoval_household` deixa a primeira conta criar a lista. Contas seguintes não criam outra lista automaticamente; precisam ser vinculadas pelo responsável.
+- A função `is_enxoval_household_owner` permite ao app mostrar a área de compartilhamento somente ao responsável.
+- A função `add_enxoval_household_member_by_email` só aceita chamadas autenticadas do responsável. Ela procura no banco uma conta com e-mail confirmado e retorna apenas o necessário; o app não recebe uma lista de usuários.
+- As regras RLS continuam verificando a associação em cada consulta. Saber o endereço do projeto ou a chave pública não é suficiente para ler a lista.
+
+## Configuração original e suporte
+
+- Projeto Supabase: **Enxoval em Conta**, região São Paulo.
+- O app usa login por e-mail e senha, armazenamento local para modo offline e sincronização ao voltar a internet.
+- A primeira entrada no app em um novo aparelho pode combinar os dados locais desse aparelho com a nuvem. Exporte um backup antes de importar dados antigos.
+- O projeto usa o plano Free. O painel fica em [Supabase](https://supabase.com/dashboard/project/zxhpvpckkvholtrhyaod).
+- Não cole senhas, chaves secretas ou tokens em chats, tickets ou no código do app.
