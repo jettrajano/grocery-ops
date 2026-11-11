@@ -41,7 +41,7 @@ O Supabase usa o **Site URL** para decidir para onde o navegador volta depois de
 1. No painel do projeto, abra **Authentication → URL Configuration**.
 2. Em **Site URL**, coloque `https://jettrajano.github.io/grocery-ops/enxoval/`.
 3. Em **Redirect URLs**, adicione também esse mesmo endereço exato.
-4. Salve. Links enviados antes da correção ainda podem levar ao endereço antigo. Para uma pessoa que já aceitou o convite, abra o usuário em **Authentication → Users** e escolha **Send password recovery**. A pessoa abre o e-mail, define uma senha no app e depois você libera o acesso à lista.
+4. Salve. Links enviados antes da correção ainda podem levar ao endereço antigo. Para uma pessoa que já aceitou o convite, abra o usuário em **Authentication → Users** e escolha **Send password recovery**. A pessoa abre o e-mail, define uma senha no app e entra novamente com essa senha. O app encerra as sessões anteriores. Se o link antigo mostrou uma URL com `access_token`/`refresh_token`, aguarde pelo menos 1 hora depois da redefinição antes de liberar essa conta à lista: o token de acesso antigo pode continuar válido até expirar. Antes de vinculá-la, ela ainda não tem acesso aos dados da família.
 
 ## Como retirar o acesso
 
