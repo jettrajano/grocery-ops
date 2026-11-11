@@ -21,7 +21,7 @@ Faça estas etapas com internet. O convite e o acesso à lista são duas coisas 
 2. Na área **Compartilhar a lista com alguém**, abra o link **Usuários no painel Supabase**. Você também pode abrir diretamente: [Authentication → Users](https://supabase.com/dashboard/project/zxhpvpckkvholtrhyaod/auth/users).
 3. No painel, escolha **Add user → Send invitation**.
 4. Digite o e-mail da pessoa e envie o convite.
-5. Peça para a pessoa abrir o e-mail do Supabase e concluir o convite. Ela deve criar a própria senha.
+5. Peça para a pessoa abrir o e-mail do Supabase e concluir o convite. O convite abre o app, que pedirá para ela criar uma senha própria.
 
 Se a pessoa já possui uma conta confirmada neste projeto Supabase, pule esta etapa. Não crie uma segunda conta para o mesmo e-mail.
 
@@ -30,9 +30,18 @@ Se a pessoa já possui uma conta confirmada neste projeto Supabase, pule esta et
 1. Depois que a pessoa aceitou o convite e confirmou o e-mail, volte ao app.
 2. Digite no campo o mesmo e-mail que recebeu o convite.
 3. Escolha **Dar acesso à lista**.
-4. O app confirma se há uma conta válida e a associa à sua lista. A pessoa então entra no app com o próprio e-mail e senha.
+4. O app confirma se há uma conta válida e a associa à sua lista. A pessoa então entra no app com o próprio e-mail e a senha que acabou de criar.
 
 Se aparecer uma mensagem dizendo que a conta não foi encontrada, confira se o e-mail está escrito igual e se a pessoa já aceitou/confirmou o convite. A pessoa também pode entrar uma vez no app para concluir o acesso e, depois, você tenta novamente. Se a conta já pertencer a outra lista familiar, ela não pode ser adicionada a esta.
+
+## Corrigir o endereço de retorno do convite
+
+O Supabase usa o **Site URL** para decidir para onde o navegador volta depois de aceitar um convite. Ele precisa apontar para a versão publicada do app, não para `localhost` (que só funciona no computador de desenvolvimento).
+
+1. No painel do projeto, abra **Authentication → URL Configuration**.
+2. Em **Site URL**, coloque `https://jettrajano.github.io/grocery-ops/enxoval/`.
+3. Em **Redirect URLs**, adicione também esse mesmo endereço exato.
+4. Salve. Convites enviados antes da correção ainda podem levar ao endereço antigo; envie um convite novo depois de cancelar a conta convidada antiga.
 
 ## Como retirar o acesso
 
