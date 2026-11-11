@@ -12,6 +12,11 @@
   const authError = document.querySelector('#authError');
   const signOutButton = document.querySelector('#signOutButton');
   const syncStatus = document.querySelector('#syncStatus');
+  const memberPanel = document.querySelector('#memberPanel');
+  const memberForm = document.querySelector('#memberForm');
+  const memberEmail = document.querySelector('#memberEmail');
+  const memberSubmitButton = document.querySelector('#memberSubmitButton');
+  const memberFeedback = document.querySelector('#memberFeedback');
   let client = null;
   let activeUserId = '';
   let householdId = '';
@@ -55,7 +60,7 @@
       return 'O banco ainda precisa receber as tabelas e regras do aplicativo.';
     }
     if (code === '42501' || code === 'PGRST301') {
-      return 'O acesso foi bloqueado pelas regras de segurança. Confira a configuração do banco.';
+      return 'Esta conta ainda não está vinculada à lista da família. Peça ao responsável para liberar o acesso e tente novamente.';
     }
     return 'Não foi possível sincronizar agora. Seus dados continuam guardados neste aparelho; tente novamente quando a conexão estiver disponível.';
   }
@@ -176,6 +181,9 @@
       if (householdResult.error) throw householdResult.error;
       householdId = householdResult.data;
       if (!householdId) throw new Error('Não foi possível localizar o grupo familiar.');
+      const ownerResult = await client.rpc('is_enxoval_household_owner');
+      if (ownerResult.error) throw ownerResult.error;
+      if (memberPanel) memberPanel.hidden = !ownerResult.data;
 
       const localState = window.enxovalApp.getState();
       const deletedIds = new Set(window.enxovalApp.getDeletedObservationIds());
@@ -320,6 +328,42 @@
     signOutButton.disabled = false;
     loginPassword.value = '';
     loginEmail.focus();
+  });
+
+
+  memberForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!client || !activeUserId || !navigator.onLine) {
+      memberFeedback.textContent = 'Conecte-se à internet antes de liberar o acesso.';
+      memberFeedback.hidden = false;
+      return;
+    }
+    memberFeedback.hidden = true;
+    memberSubmitButton.disabled = true;
+    memberSubmitButton.textContent = 'Conferindo conta…';
+    const email = memberEmail.value.trim();
+    try {
+      const result = await client.rpc('add_enxoval_household_member_by_email', { target_email: email });
+      if (result.error) throw result.error;
+      memberFeedback.textContent = 'Acesso liberado. A pessoa já pode entrar no app com o e-mail dela.';
+      memberFeedback.dataset.state = 'success';
+      memberFeedback.hidden = false;
+      memberEmail.value = '';
+    } catch (error) {
+      const message = error && error.message ? error.message : '';
+      memberFeedback.textContent = message.includes('Nenhuma conta confirmada')
+        ? 'Ainda não encontramos uma conta confirmada com esse e-mail. Confira se está escrito corretamente e se a pessoa já aceitou o convite por e-mail.'
+        : message.includes('já faz parte')
+          ? 'Essa pessoa já tem acesso à lista.'
+          : message.includes('outra lista')
+            ? 'Essa conta já está vinculada a outra lista familiar e não pode ser adicionada aqui.'
+            : 'Não foi possível liberar o acesso. Confira se a pessoa aceitou o convite e tente novamente.';
+      memberFeedback.dataset.state = 'error';
+      memberFeedback.hidden = false;
+    } finally {
+      memberSubmitButton.disabled = false;
+      memberSubmitButton.textContent = 'Dar acesso à lista';
+    }
   });
 
   window.addEventListener('enxoval:state-changed', scheduleSync);
