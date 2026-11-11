@@ -307,3 +307,24 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
 #syncStatus.is-pending .status-dot { background: #d79a4a; }
 #syncStatus.is-error .status-dot { background: #b66b5c; }
 @media (max-width: 480px) { .auth-card { padding: 23px 19px; } }
+
+
+/* Owner-only family access panel. */
+.member-panel { margin: 24px 0; padding: 21px 23px; border: 1px solid #dfe8dd; border-radius: 13px; background: #fbfcfa; }
+#memberPanel[hidden] { display: none !important; }
+.member-panel h2 { margin: 3px 0 8px; color: #2e3c32; font: 700 20px/1.25 'Manrope', 'Segoe UI', sans-serif; letter-spacing: -.35px; }
+.member-panel-copy > p:last-child, .member-steps, .member-security-note { color: #68766b; font-size: 11px; line-height: 1.65; }
+.member-panel-copy > p:last-child { margin: 0; }
+.member-steps { margin: 12px 0; padding-left: 22px; }
+.member-steps li + li { margin-top: 5px; }
+.member-steps a { color: #37734d; font-weight: 700; text-underline-offset: 2px; }
+.member-form { max-width: 700px; }
+.member-form .field-label { display: block; margin: 12px 0 6px; }
+.member-form-row { display: flex; gap: 9px; }
+.member-form-row .text-input { flex: 1; min-width: 0; }
+.member-form-row .button { flex: 0 0 auto; }
+.member-feedback { margin: 9px 0 0; color: #37734d; font-size: 11px; line-height: 1.5; }
+.member-feedback[data-state="error"] { color: #a34f43; }
+.member-security-note { margin: 15px 0 0; padding: 10px 12px; border-radius: 8px; background: #f1f5ef; }
+.member-security-note strong { color: #435e49; }
+@media (max-width: 650px) { .member-panel { margin: 18px 0; padding: 16px 14px; } .member-form-row { flex-direction: column; } .member-form-row .button { width: 100%; } }
