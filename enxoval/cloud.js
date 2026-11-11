@@ -4,6 +4,13 @@
   const PRODUCT_TABLE = 'enxoval_products';
   const OBSERVATION_TABLE = 'enxoval_observations';
   const authGate = document.querySelector('#authGate');
+  const passwordGate = document.querySelector('#passwordGate');
+  const passwordForm = document.querySelector('#passwordForm');
+  const invitePassword = document.querySelector('#invitePassword');
+  const invitePasswordConfirm = document.querySelector('#invitePasswordConfirm');
+  const passwordButton = document.querySelector('#passwordButton');
+  const passwordError = document.querySelector('#passwordError');
+  let pendingInvite = new URLSearchParams(window.location.hash.slice(1)).get('type') === 'invite';
   const appShell = document.querySelector('#appShell');
   const loginForm = document.querySelector('#loginForm');
   const loginEmail = document.querySelector('#loginEmail');
@@ -25,7 +32,15 @@
   let realtimeTimer = null;
   let realtimeChannel = null;
 
+  function showPasswordSetup() {
+    passwordGate.hidden = false;
+    authGate.hidden = true;
+    appShell.hidden = true;
+    signOutButton.hidden = true;
+  }
+
   function showAuth() {
+    if (passwordGate) passwordGate.hidden = true;
     authGate.hidden = false;
     appShell.hidden = true;
     signOutButton.hidden = true;
@@ -282,6 +297,10 @@
       showAuth();
       return;
     }
+    if (pendingInvite) {
+      showPasswordSetup();
+      return;
+    }
     if (activeUserId === user.id) return;
     if (!window.enxovalApp.switchAccount(user.id)) {
       await client.auth.signOut();
@@ -330,6 +349,42 @@
     loginEmail.focus();
   });
 
+
+  passwordForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    passwordError.hidden = true;
+    const password = invitePassword.value;
+    if (password.length < 10) {
+      passwordError.textContent = 'Escolha uma senha com pelo menos 10 caracteres.';
+      passwordError.hidden = false;
+      return;
+    }
+    if (password !== invitePasswordConfirm.value) {
+      passwordError.textContent = 'As senhas não são iguais. Digite novamente.';
+      passwordError.hidden = false;
+      return;
+    }
+    passwordButton.disabled = true;
+    passwordButton.textContent = 'Salvando…';
+    try {
+      const result = await client.auth.updateUser({ password });
+      if (result.error) throw result.error;
+      pendingInvite = false;
+      invitePassword.value = '';
+      invitePasswordConfirm.value = '';
+      window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      const sessionResult = await client.auth.getSession();
+      if (sessionResult.error || !sessionResult.data.session) throw sessionResult.error || new Error('Sessão não encontrada');
+      passwordGate.hidden = true;
+      await activateSession(sessionResult.data.session);
+    } catch (error) {
+      passwordError.textContent = 'Não foi possível salvar a senha. Atualize a página e abra novamente o convite se ele ainda estiver válido.';
+      passwordError.hidden = false;
+    } finally {
+      passwordButton.disabled = false;
+      passwordButton.textContent = 'Salvar minha senha';
+    }
+  });
 
   memberForm.addEventListener('submit', async (event) => {
     event.preventDefault();
