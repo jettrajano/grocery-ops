@@ -8,10 +8,30 @@
     <title>Enxoval em Conta — avaliação de preços</title>
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./styles.css?v=6" />
+    <link rel="stylesheet" href="./styles.css?v=7" />
   </head>
   <body>
-    <div class="app-shell">
+    <section class="auth-gate" id="authGate" aria-labelledby="authTitle">
+      <div class="auth-card">
+        <a class="brand auth-brand" href="./" aria-label="Enxoval em Conta">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><rect x="2" y="2" width="36" height="36" rx="12" fill="currentColor" /><path d="M11 25.5 17.3 19l4.5 4.2L29 15" stroke="#F9FBF7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /><path d="M23.5 15H29v5.5" stroke="#F9FBF7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></span>
+          <span class="brand-name">enxoval<span>em conta</span></span>
+        </a>
+        <p class="eyebrow eyebrow-muted">ACESSO PRIVADO</p>
+        <h1 id="authTitle">Entre na sua conta</h1>
+        <p class="auth-description">Use o e-mail e a senha que você cadastrou para o Enxoval em Conta. Seus preços só aparecem depois do login.</p>
+        <form id="loginForm" novalidate>
+          <label class="field-label" for="loginEmail">E-mail</label>
+          <input class="text-input" id="loginEmail" name="email" type="email" autocomplete="username" inputmode="email" required />
+          <label class="field-label" for="loginPassword">Senha</label>
+          <input class="text-input" id="loginPassword" name="password" type="password" autocomplete="current-password" required />
+          <p class="form-error auth-error" id="authError" role="alert" hidden></p>
+          <button class="button button-primary auth-submit" id="loginButton" type="submit">Entrar e sincronizar</button>
+        </form>
+        <p class="auth-footnote">O cadastro de novas contas não é oferecido nesta tela. Convites são gerenciados no Supabase.</p>
+      </div>
+    </section>
+    <div class="app-shell" id="appShell" hidden>
       <header class="topbar">
         <a class="brand" href="./" aria-label="Enxoval em Conta, início">
           <span class="brand-mark" aria-hidden="true">
@@ -24,7 +44,8 @@
           <span class="brand-name">enxoval<span>em conta</span></span>
         </a>
         <div class="topbar-right">
-          <span class="local-badge"><span class="status-dot"></span> Dados salvos neste aparelho</span>
+          <span class="local-badge" id="syncStatus"><span class="status-dot"></span> Conectando à nuvem…</span>
+          <button class="button button-quiet sign-out-button" id="signOutButton" type="button" hidden>Sair</button>
           <span class="platform-badge">Windows · Android</span>
         </div>
       </header>
@@ -142,7 +163,7 @@
 
         <footer class="footer-note">
           <span class="footer-lock" aria-hidden="true"><svg viewBox="0 0 18 18"><rect x="3.5" y="8" width="11" height="8" rx="2"/><path d="M6 8V5.5a3 3 0 0 1 6 0V8"/></svg></span>
-          <span>A PWA instala no Windows e Android. Os dados ficam neste aparelho; exporte e importe o backup para transferi-los entre dispositivos.</span>
+          <span>A PWA instala no Windows e Android. Com internet, os dados sincronizam entre dispositivos; sem conexão, as alterações ficam salvas neste aparelho e são enviadas quando a conexão voltar. O backup continua disponível.</span>
           <span class="footer-brand">enxoval em conta <span>✳</span></span>
         </footer>
       </main>
@@ -256,7 +277,9 @@
       </form>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="./app.js?v=10" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer crossorigin="anonymous"></script>
+    <script src="./app.js?v=11" defer></script>
+    <script src="./cloud.js?v=1" defer></script>
   </body>
 </html>
 

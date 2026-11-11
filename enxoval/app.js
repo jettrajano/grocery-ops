@@ -1,5 +1,8 @@
 const STORAGE_KEY = 'enxoval-em-conta.v1';
 const LEGACY_STORAGE_KEY = 'precoclaro.v1.offers';
+const DELETED_OBSERVATIONS_BASE_KEY = 'enxoval-em-conta.deleted-observations.v1';
+const ACTIVE_USER_STORAGE_KEY = 'enxoval-em-conta.active-user.v1';
+let DELETED_OBSERVATIONS_KEY = DELETED_OBSERVATIONS_BASE_KEY;
 const HISTORY_DAYS = 90;
 const DEFAULT_PRODUCTS = [
   { id: 'berco-inmetro', name: 'Berço certificado INMETRO', category: 'Quarto', priority: 'Alta', targetWeek: 15, responsible: 'Pai', preferredStore: 'Loja Especializada', referencePrice: 1200 },
@@ -151,6 +154,7 @@ function sanitizeProduct(product) {
     productLink: safeUrl(typeof product.productLink === 'string' ? product.productLink.trim().slice(0, 1000) : ''),
     referencePrice: Number.isFinite(Number(product.referencePrice)) && Number(product.referencePrice) > 0 ? Number(product.referencePrice) : null,
     custom: Boolean(product.custom),
+    updatedAt: typeof product.updatedAt === 'string' && Number.isFinite(Date.parse(product.updatedAt)) ? new Date(product.updatedAt).toISOString() : null,
   };
 }
 
@@ -168,6 +172,7 @@ function sanitizeObservation(observation, productId) {
     link: safeUrl(observation.link),
     notes: typeof observation.notes === 'string' ? observation.notes.trim().slice(0, 160) : (typeof observation.unit === 'string' ? observation.unit.trim().slice(0, 160) : ''),
     observedAt: new Date(observedAt).toISOString(),
+    updatedAt: typeof observation.updatedAt === 'string' && Number.isFinite(Date.parse(observation.updatedAt)) ? new Date(observation.updatedAt).toISOString() : null,
   };
 }
 
@@ -220,6 +225,7 @@ function loadState() {
 function persistState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    window.dispatchEvent(new CustomEvent('enxoval:state-changed'));
     return true;
   } catch {
     showToast('Não foi possível salvar. Exporte um backup e verifique o espaço deste dispositivo.');
@@ -745,6 +751,7 @@ function handleProductSubmit(event) {
     productLink,
     referencePrice,
     custom: true,
+    updatedAt: new Date().toISOString(),
   });
   if (!product) {
     showProductFormError('Não foi possível cadastrar esse item. Confira os dados e tente novamente.');
@@ -832,7 +839,7 @@ function handleSubmit(event) {
   }
   const observation = sanitizeObservation({
     id: editingObservationId || createId(), productId: product.id, store, price, source, link,
-    notes: notesInput.value, observedAt: observationDate.toISOString(),
+    notes: notesInput.value, observedAt: observationDate.toISOString(), updatedAt: new Date().toISOString(),
   }, product.id);
   if (!observation) {
     showFormError('Não foi possível salvar este registro. Confira os dados e tente novamente.');
@@ -857,6 +864,12 @@ function handleSubmit(event) {
 }
 
 function removeObservation(id) {
+  try {
+    const deleted = JSON.parse(localStorage.getItem(DELETED_OBSERVATIONS_KEY) || '[]');
+    const ids = new Set(Array.isArray(deleted) ? deleted.map(String) : []);
+    ids.add(String(id));
+    localStorage.setItem(DELETED_OBSERVATIONS_KEY, JSON.stringify([...ids]));
+  } catch { /* keep the visible list responsive even if tombstone storage is unavailable */ }
   state.observations = state.observations.filter((observation) => observation.id !== id);
   persistState();
   render();
@@ -977,6 +990,67 @@ document.addEventListener('keydown', (event) => {
     document.querySelector('#searchInput').focus();
   }
 });
+
+window.enxovalApp = {
+  getState() {
+    return JSON.parse(JSON.stringify(state));
+  },
+  switchAccount(userId) {
+    if (!userId) return false;
+    const previousUserId = localStorage.getItem(ACTIVE_USER_STORAGE_KEY) || '';
+    if (previousUserId === userId) {
+      DELETED_OBSERVATIONS_KEY = DELETED_OBSERVATIONS_BASE_KEY + '.' + userId;
+      return true;
+    }
+    try {
+      if (previousUserId) {
+        localStorage.setItem(STORAGE_KEY + '.user.' + previousUserId, JSON.stringify(state));
+        localStorage.setItem(DELETED_OBSERVATIONS_BASE_KEY + '.' + previousUserId, localStorage.getItem(DELETED_OBSERVATIONS_KEY) || '[]');
+      }
+      const savedState = previousUserId ? localStorage.getItem(STORAGE_KEY + '.user.' + userId) : null;
+      const nextState = savedState ? JSON.parse(savedState) : (previousUserId ? createInitialState() : state);
+      if (!previousUserId && !savedState) localStorage.setItem(STORAGE_KEY + '.user.' + userId, JSON.stringify(nextState));
+      const nextDeletedKey = DELETED_OBSERVATIONS_BASE_KEY + '.' + userId;
+      if (!previousUserId) localStorage.setItem(nextDeletedKey, localStorage.getItem(DELETED_OBSERVATIONS_BASE_KEY) || '[]');
+      else if (!localStorage.getItem(nextDeletedKey)) localStorage.setItem(nextDeletedKey, '[]');
+      localStorage.setItem(ACTIVE_USER_STORAGE_KEY, userId);
+      DELETED_OBSERVATIONS_KEY = nextDeletedKey;
+      return this.replaceState(nextState);
+    } catch {
+      return false;
+    }
+  },
+  getDeletedObservationIds() {
+    try {
+      const value = JSON.parse(localStorage.getItem(DELETED_OBSERVATIONS_KEY) || '[]');
+      return Array.isArray(value) ? value.map(String) : [];
+    } catch {
+      return [];
+    }
+  },
+  rememberDeletedObservationIds(ids) {
+    try {
+      const existing = new Set(this.getDeletedObservationIds());
+      for (const id of ids || []) existing.add(String(id));
+      localStorage.setItem(DELETED_OBSERVATIONS_KEY, JSON.stringify([...existing]));
+    } catch { /* next online sync can retry */ }
+  },
+  showToast(message) {
+    showToast(message);
+  },
+  replaceState(next) {
+    if (!next || !Array.isArray(next.products) || !Array.isArray(next.observations)) return false;
+    const products = next.products.map(sanitizeProduct).filter(Boolean);
+    const productIds = new Set(products.map((product) => product.id));
+    const observations = next.observations
+      .map((observation) => sanitizeObservation(observation, observation?.productId))
+      .filter((observation) => observation && productIds.has(observation.productId));
+    state = { version: 1, products: products.length ? products : DEFAULT_PRODUCTS.map((product) => ({ ...product })), observations };
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* cloud remains authoritative */ }
+    render();
+    return true;
+  },
+};
 
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
