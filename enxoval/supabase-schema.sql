@@ -72,6 +72,21 @@ as $$
   );
 $$;
 
+create or replace function public.is_enxoval_household_owner()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.enxoval_household_members as member
+    where member.user_id = auth.uid()
+      and member.role = 'owner'
+  );
+$$;
+
 create or replace function public.ensure_enxoval_household()
 returns uuid
 language plpgsql
@@ -96,39 +111,53 @@ begin
     return current_household_id;
   end if;
 
-  insert into public.enxoval_households (name, owner_id)
-    values ('Enxoval da família', current_user_id)
-    on conflict (owner_id) do nothing
-    returning id into current_household_id;
+  -- Only the first account can create the family. Other accounts must be linked by its owner.
+  perform pg_catalog.pg_advisory_xact_lock(721045001);
 
-  if current_household_id is null then
-    select household.id
-      into current_household_id
-      from public.enxoval_households as household
-      where household.owner_id = current_user_id;
+  select member.household_id
+    into current_household_id
+    from public.enxoval_household_members as member
+    where member.user_id = current_user_id
+    limit 1;
+
+  if current_household_id is not null then
+    return current_household_id;
   end if;
 
+  if exists (select 1 from public.enxoval_households) then
+    raise exception 'This account has not been linked to the family list yet' using errcode = '42501';
+  end if;
+
+  insert into public.enxoval_households (name, owner_id)
+    values ('Enxoval da família', current_user_id)
+    returning id into current_household_id;
+
   insert into public.enxoval_household_members (household_id, user_id, role)
-    values (current_household_id, current_user_id, 'owner')
-    on conflict (household_id, user_id) do nothing;
+    values (current_household_id, current_user_id, 'owner');
 
   return current_household_id;
 end;
 $$;
 
--- For future invitations: only an existing household owner can add an already-created Auth user.
-create or replace function public.add_enxoval_household_member(target_user_id uuid)
+-- Only the family owner can link an already confirmed Auth account by its email.
+create or replace function public.add_enxoval_household_member_by_email(target_email text)
 returns void
 language plpgsql
 security definer
-set search_path = pg_catalog, public
+set search_path = pg_catalog, public, auth
 as $$
 declare
   current_user_id uuid := auth.uid();
   current_household_id uuid;
+  target_user_id uuid;
+  existing_household_id uuid;
+  normalized_email text := lower(btrim(coalesce(target_email, '')));
 begin
   if current_user_id is null then
     raise exception 'Authentication required' using errcode = '28000';
+  end if;
+  if normalized_email = '' or length(normalized_email) > 254 then
+    raise exception 'Enter a valid email address' using errcode = '22023';
   end if;
 
   select member.household_id
@@ -139,14 +168,43 @@ begin
     limit 1;
 
   if current_household_id is null then
-    raise exception 'Only a household owner can add members' using errcode = '42501';
+    raise exception 'Only the family owner can link accounts' using errcode = '42501';
+  end if;
+
+  select account.id
+    into target_user_id
+    from auth.users as account
+    where lower(account.email) = normalized_email
+      and account.email_confirmed_at is not null
+    limit 1;
+
+  if target_user_id is null then
+    raise exception 'Nenhuma conta confirmada foi encontrada para esse e-mail' using errcode = 'P0001';
+  end if;
+  if target_user_id = current_user_id then
+    raise exception 'A conta do responsável já tem acesso' using errcode = 'P0001';
+  end if;
+
+  select member.household_id
+    into existing_household_id
+    from public.enxoval_household_members as member
+    where member.user_id = target_user_id
+    limit 1;
+
+  if existing_household_id = current_household_id then
+    raise exception 'Essa conta já faz parte da lista' using errcode = 'P0001';
+  end if;
+  if existing_household_id is not null then
+    raise exception 'Essa conta já está vinculada a outra lista familiar' using errcode = 'P0001';
   end if;
 
   insert into public.enxoval_household_members (household_id, user_id, role)
-    values (current_household_id, target_user_id, 'member')
-    on conflict (household_id, user_id) do nothing;
+    values (current_household_id, target_user_id, 'member');
 end;
 $$;
+
+-- Remove the earlier UUID-based helper so the owner links accounts by email through the app.
+drop function if exists public.add_enxoval_household_member(uuid);
 
 alter table public.enxoval_households enable row level security;
 alter table public.enxoval_household_members enable row level security;
@@ -188,10 +246,12 @@ grant select, insert, update, delete on table public.enxoval_observations to aut
 
 revoke all on function public.is_enxoval_household_member(uuid) from public, anon;
 revoke all on function public.ensure_enxoval_household() from public, anon;
-revoke all on function public.add_enxoval_household_member(uuid) from public, anon;
+revoke all on function public.is_enxoval_household_owner() from public, anon;
+revoke all on function public.add_enxoval_household_member_by_email(text) from public, anon;
 grant execute on function public.is_enxoval_household_member(uuid) to authenticated;
 grant execute on function public.ensure_enxoval_household() to authenticated;
-grant execute on function public.add_enxoval_household_member(uuid) to authenticated;
+grant execute on function public.is_enxoval_household_owner() to authenticated;
+grant execute on function public.add_enxoval_household_member_by_email(text) to authenticated;
 
 do $$
 begin
