@@ -8,7 +8,7 @@
     <title>Enxoval em Conta — avaliação de preços</title>
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./styles.css?v=7" />
+    <link rel="stylesheet" href="./styles.css?v=8" />
   </head>
   <body>
     <section class="auth-gate" id="authGate" aria-labelledby="authTitle">
@@ -76,6 +76,28 @@
             </button>
             <input id="importInput" type="file" accept="application/json,.json" hidden />
           </div>
+        </section>
+
+        <section class="member-panel" id="memberPanel" aria-labelledby="memberPanelTitle" hidden>
+          <div class="member-panel-copy">
+            <p class="eyebrow eyebrow-muted">ACESSO DA FAMÍLIA</p>
+            <h2 id="memberPanelTitle">Compartilhar a lista com alguém</h2>
+            <p>Convide a pessoa pelo Supabase. Depois que ela aceitar o convite e confirmar o e-mail, coloque aqui o mesmo e-mail para liberar a lista compartilhada.</p>
+          </div>
+          <ol class="member-steps">
+            <li>Se a pessoa ainda não tem conta, <a href="https://supabase.com/dashboard/project/zxhpvpckkvholtrhyaod/auth/users" target="_blank" rel="noopener noreferrer">abra Usuários no painel Supabase</a>, escolha <strong>Add user → Send invitation</strong> e informe o e-mail dela. Se ela já tem conta, pule esta etapa.</li>
+            <li>Peça para a pessoa abrir o e-mail do Supabase e concluir o convite.</li>
+            <li>Digite abaixo o mesmo e-mail e escolha <strong>Dar acesso à lista</strong>.</li>
+          </ol>
+          <form class="member-form" id="memberForm">
+            <label class="field-label" for="memberEmail">E-mail da pessoa convidada</label>
+            <div class="member-form-row">
+              <input class="text-input" id="memberEmail" name="email" type="email" autocomplete="email" inputmode="email" placeholder="nome@exemplo.com" required maxlength="254" />
+              <button class="button button-primary" id="memberSubmitButton" type="submit">Dar acesso à lista</button>
+            </div>
+            <p class="member-feedback" id="memberFeedback" role="status" aria-live="polite" hidden></p>
+          </form>
+          <p class="member-security-note"><strong>Antes de compartilhar:</strong> cada pessoa entra com seu próprio e-mail e senha. Quem recebe acesso pode ver, adicionar, alterar e excluir itens e preços da lista. Compartilhe somente com pessoas de confiança.</p>
         </section>
 
         <section class="stats-grid" aria-label="Resumo do enxoval">
@@ -279,7 +301,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer crossorigin="anonymous"></script>
     <script src="./app.js?v=11" defer></script>
-    <script src="./cloud.js?v=1" defer></script>
+    <script src="./cloud.js?v=2" defer></script>
   </body>
 </html>
 
