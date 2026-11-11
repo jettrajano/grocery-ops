@@ -10,7 +10,8 @@
   const invitePasswordConfirm = document.querySelector('#invitePasswordConfirm');
   const passwordButton = document.querySelector('#passwordButton');
   const passwordError = document.querySelector('#passwordError');
-  let pendingInvite = new URLSearchParams(window.location.hash.slice(1)).get('type') === 'invite';
+  const authLinkType = new URLSearchParams(window.location.hash.slice(1)).get('type');
+  let pendingInvite = authLinkType === 'invite' || authLinkType === 'recovery';
   const appShell = document.querySelector('#appShell');
   const loginForm = document.querySelector('#loginForm');
   const loginEmail = document.querySelector('#loginEmail');
@@ -378,7 +379,7 @@
       passwordGate.hidden = true;
       await activateSession(sessionResult.data.session);
     } catch (error) {
-      passwordError.textContent = 'Não foi possível salvar a senha. Atualize a página e abra novamente o convite se ele ainda estiver válido.';
+      passwordError.textContent = 'Não foi possível salvar a senha. Peça para o responsável enviar um novo link de recuperação e tente novamente.';
       passwordError.hidden = false;
     } finally {
       passwordButton.disabled = false;
