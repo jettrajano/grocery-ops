@@ -112,7 +112,7 @@ jobs:
           exit 1
 
       - name: Telemetria no coletor (trace da API, span do banco e métricas)
-        run: |\
+        run: |
           kubectl() { sudo k3s kubectl "$@"; }
           esperados=(
             'service.name: Str(grocery-ops)'
