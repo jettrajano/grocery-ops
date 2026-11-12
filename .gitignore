@@ -23,3 +23,8 @@ node_modules/
 # graphify: caminhos locais da máquina (interpretador e raiz absoluta)
 graphify-out/.graphify_python
 graphify-out/.graphify_root
+
+# Arquivos locais com configurações e segredos
+.env
+.env.*
+!.env.example
