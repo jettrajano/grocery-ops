@@ -1115,4 +1115,3 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 
 persistState();
 render();
-
