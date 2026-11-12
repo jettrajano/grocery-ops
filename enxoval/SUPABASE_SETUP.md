@@ -51,6 +51,12 @@ No momento, não há botão para remover membros no app. Se precisar retirar alg
 
 Compartilhe somente com pessoas em quem confia. Todo membro pode editar e apagar itens e preços. Não existe perfil somente para leitura nesta versão. Cada pessoa deve manter sua própria senha e usar uma conta individual.
 
+## Marcar itens comprados
+
+Os itens comprados continuam guardados na tabela `enxoval_products`; o app apenas os retira da lista principal e os mostra em **Itens comprados**. O status e a data são sincronizados com os outros aparelhos e com as contas que já têm acesso à lista familiar.
+
+Antes de incorporar/publicar a nova versão, a tabela precisa receber as colunas `purchased` e `purchased_at`. Depois de revisar o código, abra o **SQL Editor** do Supabase, crie uma consulta, copie o conteúdo de [`migrations/20261112_add_purchased_status.sql`](migrations/20261112_add_purchased_status.sql), clique em **Run** e confira se o painel mostra sucesso. Só então incorpore/publice o código. Essa alteração é aditiva e compatível com a versão atual: itens existentes começam como não comprados e nenhum item é apagado.
+
 ## Para revisar ou aprender
 
 - O arquivo `supabase-schema.sql` contém as tabelas, funções e regras de acesso do banco. Ele pode ser executado novamente; não apaga os dados da lista.
