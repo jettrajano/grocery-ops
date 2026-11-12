@@ -36,6 +36,7 @@ const DEFAULT_PRODUCTS = [
 ];
 
 const productGrid = document.querySelector('#productGrid');
+const purchasedViewButton = document.querySelector('#purchasedViewButton');
 const emptyState = document.querySelector('#emptyState');
 const productDialog = document.querySelector('#productDialog');
 const productForm = document.querySelector('#productForm');
@@ -68,6 +69,7 @@ const palette = ['#27724e', '#8b6caa', '#c47850', '#4e7da4', '#bb5970', '#8b873e
 
 let state = loadState();
 let activeSummaryFilter = '';
+let showPurchased = false;
 let editingObservationId = null;
 let toastTimer;
 
@@ -154,6 +156,8 @@ function sanitizeProduct(product) {
     productLink: safeUrl(typeof product.productLink === 'string' ? product.productLink.trim().slice(0, 1000) : ''),
     referencePrice: Number.isFinite(Number(product.referencePrice)) && Number(product.referencePrice) > 0 ? Number(product.referencePrice) : null,
     custom: Boolean(product.custom),
+    purchased: Boolean(product.purchased),
+    purchasedAt: typeof product.purchasedAt === 'string' && Number.isFinite(Date.parse(product.purchasedAt)) ? new Date(product.purchasedAt).toISOString() : null,
     updatedAt: typeof product.updatedAt === 'string' && Number.isFinite(Date.parse(product.updatedAt)) ? new Date(product.updatedAt).toISOString() : null,
   };
 }
@@ -186,6 +190,13 @@ function findOrAddProduct(productList, importedProduct) {
   let existing = productList.find((product) => product.id === clean.id || normalize(product.name) === normalize(clean.name));
   if (existing) {
     if (!existing.referencePrice && clean.referencePrice) existing.referencePrice = clean.referencePrice;
+    const incomingUpdatedAt = Date.parse(clean.updatedAt || clean.purchasedAt || '') || 0;
+    const existingUpdatedAt = Date.parse(existing.updatedAt || '') || 0;
+    if (incomingUpdatedAt > existingUpdatedAt) {
+      existing.purchased = clean.purchased;
+      existing.purchasedAt = clean.purchasedAt;
+      existing.updatedAt = clean.updatedAt || clean.purchasedAt;
+    }
     return existing;
   }
   if (productList.some((product) => product.id === clean.id)) clean.id = createId();
@@ -255,12 +266,16 @@ function getLatestByStore(productId) {
 }
 
 function updateSummary() {
-  const tracked = state.products.filter((product) => getProductObservations(product.id).length > 0).length;
-  const belowTarget = state.products.filter((product) => {
+  const activeProducts = state.products.filter((product) => !product.purchased);
+  const purchasedCount = state.products.filter((product) => product.purchased).length;
+  const tracked = activeProducts.filter((product) => getProductObservations(product.id).length > 0).length;
+  const belowTarget = activeProducts.filter((product) => {
     const best = getLatestByStore(product.id)[0];
     return best && product.referencePrice && best.price <= product.referencePrice;
   }).length;
-  document.querySelector('#productCount').textContent = state.products.length;
+  document.querySelector('#productCount').textContent = activeProducts.length;
+  document.querySelector('#purchasedCount').textContent = purchasedCount;
+  purchasedViewButton.setAttribute('aria-pressed', String(showPurchased));
   document.querySelector('#trackedCount').textContent = tracked;
   document.querySelector('#observationCount').textContent = state.observations.length;
   document.querySelector('#belowTargetCount').textContent = belowTarget;
@@ -572,6 +587,11 @@ function createProductCard(product) {
     history.append(historyList);
   }
 
+  if (product.purchased && product.purchasedAt) {
+    const purchasedDate = dateFormat.format(new Date(product.purchasedAt));
+    meta.textContent = [meta.textContent, `comprado em ${purchasedDate}`].filter(Boolean).join(' · ');
+  }
+
   const footer = document.createElement('div');
   footer.className = 'card-footer';
   const note = document.createElement('p');
@@ -584,15 +604,40 @@ function createProductCard(product) {
   } else {
     note.textContent = 'Compare ofertas de duas ou mais lojas';
   }
+  const actions = document.createElement('div');
+  actions.className = 'product-footer-actions';
   const add = document.createElement('button');
   add.className = 'add-offer-link';
   add.type = 'button';
   add.append(icon('plus'), document.createTextNode('Registrar preço'));
   add.addEventListener('click', () => openOfferDialog(product.name));
-  footer.append(note, add);
+  const purchase = document.createElement('button');
+  purchase.className = `purchase-button${product.purchased ? ' is-purchased' : ''}`;
+  purchase.type = 'button';
+  purchase.textContent = product.purchased ? 'Voltar para a lista' : 'Marcar como comprado';
+  purchase.setAttribute('aria-label', product.purchased ? `Voltar ${product.name} para a lista principal` : `Marcar ${product.name} como comprado`);
+  purchase.addEventListener('click', () => setProductPurchased(product.id, !product.purchased));
+  actions.append(add, purchase);
+  footer.append(note, actions);
 
   card.append(top, meta, target, pricesHeading, list, createMarketplaceSearch(product), history, footer);
   return card;
+}
+
+function setProductPurchased(productId, purchased) {
+  const product = state.products.find((item) => item.id === productId);
+  if (!product) return;
+  const previous = { purchased: product.purchased, purchasedAt: product.purchasedAt, updatedAt: product.updatedAt };
+  const now = new Date().toISOString();
+  product.purchased = Boolean(purchased);
+  product.purchasedAt = product.purchased ? now : null;
+  product.updatedAt = now;
+  if (!persistState()) {
+    Object.assign(product, previous);
+    return;
+  }
+  render();
+  showToast(product.purchased ? 'Item marcado como comprado.' : 'Item voltou para a lista principal.');
 }
 
 function updateCategoryFilter() {
@@ -615,9 +660,9 @@ function updateCategorySuggestions() {
 function render() {
   updateSummary();
   updateCategoryFilter();
-  const selectedSummary = SUMMARY_FILTERS[activeSummaryFilter];
-  document.querySelector('#catalogHeadingText').textContent = selectedSummary?.heading || 'Acompanhe o enxoval';
-  document.querySelector('#summaryFilterNote').hidden = !selectedSummary;
+  const selectedSummary = showPurchased ? null : SUMMARY_FILTERS[activeSummaryFilter];
+  document.querySelector('#catalogHeadingText').textContent = showPurchased ? 'Itens comprados' : (selectedSummary?.heading || 'Acompanhe o enxoval');
+  document.querySelector('#summaryFilterNote').hidden = showPurchased || !selectedSummary;
   document.querySelector('#summaryFilterText').textContent = selectedSummary?.notice || '';
   for (const [key, filter] of Object.entries(SUMMARY_FILTERS)) {
     document.querySelector(filter.button).setAttribute('aria-pressed', String(key === activeSummaryFilter));
@@ -627,8 +672,9 @@ function render() {
   const priority = document.querySelector('#priorityFilter').value;
   const sort = document.querySelector('#sortSelect').value;
   const visible = state.products.filter((product) => {
-    if ((activeSummaryFilter === 'tracked' || activeSummaryFilter === 'records') && getProductObservations(product.id).length === 0) return false;
-    if (activeSummaryFilter === 'belowTarget') {
+    if (Boolean(product.purchased) !== showPurchased) return false;
+    if (!showPurchased && (activeSummaryFilter === 'tracked' || activeSummaryFilter === 'records') && getProductObservations(product.id).length === 0) return false;
+    if (!showPurchased && activeSummaryFilter === 'belowTarget') {
       const best = getLatestByStore(product.id)[0];
       if (!best || !product.referencePrice || best.price > product.referencePrice) return false;
     }
@@ -655,9 +701,11 @@ function render() {
   const noMatches = visible.length === 0;
   emptyState.hidden = !noMatches;
   productGrid.hidden = noMatches;
-  document.querySelector('#emptyKicker').textContent = selectedSummary ? 'RESUMO DO ENXOVAL' : 'FILTROS DA PESQUISA';
-  document.querySelector('#emptyTitle').textContent = selectedSummary?.emptyTitle || 'Nenhum item encontrado';
-  document.querySelector('#emptyDescription').textContent = selectedSummary?.emptyDescription || 'Tente outro termo de busca ou limpe os filtros para ver a lista completa do enxoval.';
+  document.querySelector('#emptyKicker').textContent = showPurchased ? 'ITENS FINALIZADOS' : (selectedSummary ? 'RESUMO DO ENXOVAL' : 'FILTROS DA PESQUISA');
+  document.querySelector('#emptyTitle').textContent = showPurchased ? 'Nenhum item comprado ainda' : (selectedSummary?.emptyTitle || 'Nenhum item encontrado');
+  document.querySelector('#emptyDescription').textContent = showPurchased
+    ? 'Quando você marcar um item como comprado, ele aparecerá nesta lista.'
+    : (selectedSummary?.emptyDescription || 'Tente outro termo de busca ou limpe os filtros para ver a lista completa do enxoval.');
   document.querySelector('#emptyAddButton').hidden = true;
   const suggestions = state.products.map((product) => {
     const option = document.createElement('option');
@@ -670,6 +718,7 @@ function render() {
 
 function toggleSummaryFilter(filter) {
   if (!SUMMARY_FILTERS[filter]) return;
+  showPurchased = false;
   activeSummaryFilter = activeSummaryFilter === filter ? '' : filter;
   document.querySelector('#searchInput').value = '';
   document.querySelector('#categoryFilter').value = '';
@@ -970,6 +1019,14 @@ document.querySelector('#filterTrackedButton').addEventListener('click', () => t
 document.querySelector('#filterRecordsButton').addEventListener('click', () => toggleSummaryFilter('records'));
 document.querySelector('#filterBelowTargetButton').addEventListener('click', () => toggleSummaryFilter('belowTarget'));
 document.querySelector('#clearSummaryFilterButton').addEventListener('click', clearSummaryFilter);
+purchasedViewButton.addEventListener('click', () => {
+  showPurchased = !showPurchased;
+  activeSummaryFilter = '';
+  document.querySelector('#searchInput').value = '';
+  document.querySelector('#categoryFilter').value = '';
+  document.querySelector('#priorityFilter').value = '';
+  render();
+});
 document.querySelector('#searchInput').addEventListener('input', handleManualFilterChange);
 document.querySelector('#sortSelect').addEventListener('change', render);
 document.querySelector('#categoryFilter').addEventListener('change', handleManualFilterChange);
@@ -1058,4 +1115,3 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 
 persistState();
 render();
-

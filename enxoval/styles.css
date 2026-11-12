@@ -332,3 +332,23 @@ kbd { border: 1px solid #ecefea; padding: 3px 5px; border-radius: 4px; color: #a
 
 /* Invite password setup. */
 #passwordGate[hidden] { display: none !important; }
+
+
+/* Lista de itens comprados */
+.catalog-controls { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.purchased-view-button { min-height: 38px; gap: 7px; white-space: nowrap; }
+.purchased-view-button > svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.purchased-view-button[aria-pressed="true"] { border-color: #bed7c1; background: #edf5ee; color: #39734a; }
+.purchased-count { min-width: 21px; height: 21px; display: inline-grid; place-items: center; padding: 0 5px; border-radius: 7px; background: #edf3ed; color: #577c5e; font-size: 10px; font-weight: 700; }
+.product-footer-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px 13px; }
+.purchase-button { min-height: 33px; border: 1px solid #d7e6d8; border-radius: 7px; padding: 0 10px; background: #f2f7f1; color: #39734a; font-size: 9px; font-weight: 700; cursor: pointer; }
+.purchase-button:hover { border-color: #aacbad; background: #e8f3e8; }
+.purchase-button.is-purchased { border-color: #e4e8e3; background: #fff; color: #647068; }
+.purchase-button.is-purchased:hover { background: #f4f6f2; }
+@media (max-width: 650px) {
+  .catalog-controls { width: 100%; justify-content: space-between; gap: 8px; }
+  .catalog-controls .sort-control { margin-left: auto; }
+  .purchased-view-button { flex: 0 0 auto; padding: 0 9px; font-size: 9px; }
+  .product-footer-actions { gap: 5px 8px; }
+  .purchase-button { min-height: 36px; }
+}

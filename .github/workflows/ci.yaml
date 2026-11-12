@@ -16,10 +16,10 @@ jobs:
   lint:
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Ferramentas (versões fixadas)
         run: ./scripts/setup-tools.sh && echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - uses: actions/cache@v6
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             ~/.cache/pre-commit
@@ -49,7 +49,7 @@ jobs:
       K3S_INSTALL_SHA256: ed01f89fd977bf20ac1516bbebf8370bf3ddbaa55dac8aba610956a4c78cc00b
       CI_IMAGE: docker.io/library/app-ci:${{ github.sha }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Ferramentas (versões fixadas)
         run: ./scripts/setup-tools.sh kustomize && echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
