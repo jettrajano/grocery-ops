@@ -99,6 +99,8 @@
       product_link: product.productLink || '',
       reference_price: product.referencePrice || null,
       custom: Boolean(product.custom),
+      purchased: Boolean(product.purchased),
+      purchased_at: product.purchased ? (product.purchasedAt || now) : null,
       updated_at: product.updatedAt || now,
     };
   }
@@ -131,6 +133,8 @@
       productLink: row.product_link || '',
       referencePrice: row.reference_price === null ? null : Number(row.reference_price),
       custom: Boolean(row.custom),
+      purchased: Boolean(row.purchased),
+      purchasedAt: row.purchased_at || null,
       updatedAt: row.updated_at,
     };
   }
