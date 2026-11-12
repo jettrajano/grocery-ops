@@ -145,7 +145,12 @@
               <p class="eyebrow eyebrow-muted">LISTA PERSONALIZADA</p>
               <h2 id="catalog-title"><span id="catalogHeadingText">Acompanhe o enxoval</span> <span class="result-count" id="resultCount">0</span></h2>
             </div>
-            <label class="sort-control" for="sortSelect">
+            <div class="catalog-controls">
+              <button class="button button-quiet purchased-view-button" id="purchasedViewButton" type="button" aria-pressed="false" aria-controls="productGrid">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8" /></svg>
+                Itens comprados <span class="purchased-count" id="purchasedCount">0</span>
+              </button>
+              <label class="sort-control" for="sortSelect">
               <span>Ordenar</span>
               <select id="sortSelect">
                 <option value="priority">Prioridade</option>
@@ -154,7 +159,8 @@
                 <option value="name">Nome do item</option>
               </select>
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg>
-            </label>
+              </label>
+            </div>
           </div>
 
           <div class="search-row filter-row">
@@ -316,8 +322,8 @@
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer crossorigin="anonymous"></script>
-    <script src="./app.js?v=11" defer></script>
-    <script src="./cloud.js?v=3" defer></script>
+    <script src="./app.js?v=12" defer></script>
+    <script src="./cloud.js?v=4" defer></script>
   </body>
 </html>
 
