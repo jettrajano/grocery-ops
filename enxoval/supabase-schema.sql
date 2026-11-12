@@ -29,9 +29,17 @@ create table if not exists public.enxoval_products (
   product_link text not null default '' check (length(product_link) <= 1000),
   reference_price numeric(12,2) check (reference_price is null or reference_price > 0),
   custom boolean not null default false,
+  purchased boolean not null default false,
+  purchased_at timestamptz,
   updated_at timestamptz not null default now(),
   primary key (household_id, id)
 );
+
+-- Also upgrades databases created with an earlier version of this schema.
+alter table public.enxoval_products
+  add column if not exists purchased boolean not null default false;
+alter table public.enxoval_products
+  add column if not exists purchased_at timestamptz;
 
 create table if not exists public.enxoval_observations (
   household_id uuid not null,
