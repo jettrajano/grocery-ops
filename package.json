@@ -12,10 +12,10 @@
     "@opentelemetry/core": "3.0.0",
     "nuxt": "^4.6.4",
     "postgres": "^4.0.0",
-    "vue": "^3.5.45"
+    "vue": "^3.5.46"
   },
   "devDependencies": {
     "@vite-pwa/assets-generator": "^2.0.0",
-    "@vite-pwa/nuxt": "^1.1.1"
+    "@vite-pwa/nuxt": "^2.0.3"
   }
 }
